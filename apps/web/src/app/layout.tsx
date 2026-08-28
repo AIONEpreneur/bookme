@@ -3,12 +3,12 @@ import { AccessibilityFocusManager } from "@/components/accessibility-focus";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "SnagTime", template: "%s · SnagTime" },
+  title: { default: "BookMe", template: "%s · BookMe" },
   description: "Schnapp dir einen Termin. Werde gebucht.",
-  applicationName: "SnagTime",
+  applicationName: "BookMe",
   icons: { icon: "/icon.svg" },
   manifest: "/manifest.webmanifest",
-  openGraph: { title: "SnagTime", description: "Schnapp dir einen Termin. Werde gebucht.", type: "website" },
+  openGraph: { title: "BookMe", description: "Schnapp dir einen Termin. Werde gebucht.", type: "website" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

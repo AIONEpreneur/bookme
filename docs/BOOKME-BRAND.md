@@ -1,18 +1,20 @@
-# SnagTime-Markensystem
+# BookMe-Markensystem
+
+BookMe ist die deutsche Community-Edition von [SnagTime](https://github.com/nateherkai/snagtime). Das Markensystem übernimmt die Farb- und Typografie-Grundlagen des Originals und ersetzt Wortmarke und Bildmarke.
 
 ## Positionierung
 
-SnagTime macht es schnell und unkompliziert, Zeit anzubieten, einen Link zu teilen und gebucht zu werden. Das Produkt soll leistungsfähig genug für ein Unternehmen wirken und freundlich genug für Solo-Selbstständige.
+BookMe macht es schnell und unkompliziert, Zeit anzubieten, einen Link zu teilen und gebucht zu werden. Das Produkt soll leistungsfähig genug für ein Unternehmen wirken und freundlich genug für Solo-Selbstständige.
 
 **Zentrales Versprechen:** Einfache Terminplanung ohne Ballast.
 
-**Tagline:** Schnapp dir einen Termin. Werde gebucht. (Original: „Snag a time. Get booked.")
+**Tagline:** Schnapp dir einen Termin. Werde gebucht.
 
-**Stimme:** Direkt, nützlich, positiv und menschlich. Bevorzuge kurze Verben wie „Teilen", „Buchen", „Verbinden" und „Termin schnappen". Vermeide aufgeblasene Produktivitätssprache.
+**Stimme:** Direkt, nützlich, positiv und menschlich. Bevorzuge kurze Verben wie „Teilen", „Buchen" und „Verbinden". Vermeide aufgeblasene Produktivitätssprache.
 
 ## Logo
 
-Die Marke kombiniert einen Kalender, einen hervorgehobenen Zeitslot und einen Cursor. Sie soll Auswahl und Geschwindigkeit vermitteln, noch bevor der Name gelesen wird.
+Die Marke kombiniert einen Kalender, einen hervorgehobenen Zeitslot und ein Bestätigungs-Häkchen. Sie soll Auswahl und Verbindlichkeit vermitteln, noch bevor der Name gelesen wird.
 
 - Verwende das vollständige Logo (Lockup), wenn horizontaler Platz vorhanden ist.
 - Verwende die quadratische Marke für Favicons, Avatare und kompakte Navigation.
@@ -22,13 +24,13 @@ Die Marke kombiniert einen Kalender, einen hervorgehobenen Zeitslot und einen Cu
 Produktions-Assets:
 
 - `/icon.svg` ist die quadratische App-Marke.
-- `/snagtime-logo.svg` ist das horizontale Lockup.
+- `/bookme-logo.svg` ist das horizontale Lockup.
 
 ## Farben
 
 | Rolle | Farbe | Hex |
 | --- | --- | --- |
-| Primär | Snag Blue | `#2563EB` |
+| Primär | Book Blue | `#2563EB` |
 | Primär (Hover) | Deep Blue | `#1D4ED8` |
 | Dunkle Flächen | Midnight | `#0B1F3A` |
 | Primärer Text | Ink | `#10213D` |
@@ -45,4 +47,4 @@ Verwende Inter oder den nativen System-Sans-Serif-Stack. Überschriften sind kom
 
 ## Benennung
 
-Schreibe den Produktnamen als `SnagTime`, mit großem S und T. Verwende weder `Snag Time` noch `Snagtime` noch den früheren kundenseitigen Namen. Historische Datenbankrollen, Migrationsobjekte, Cookie-Namen und Kompatibilitätsbezeichner behalten ihre ursprünglichen internen Namen, bis eine separat geplante Migration ansteht.
+Schreibe den Produktnamen als `BookMe`, mit großem B und M. Verwende weder `Book Me` noch `Bookme`. Interne technische Bezeichner (Event-Namen, Header, Datenbankrollen, Migrationsobjekte, Kompatibilitätsbezeichner) behalten ihre ursprünglichen Namen aus dem Upstream-Projekt, damit die Codebasis mit SnagTime vergleichbar und aktualisierbar bleibt.

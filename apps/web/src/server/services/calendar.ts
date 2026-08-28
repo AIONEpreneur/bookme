@@ -498,7 +498,7 @@ export async function disconnectGoogleCalendar(userId: string, revoke: (token: s
     return { id: fenced.id, credentialUserId: fenced.userId, token: decryptToken(fenced.refreshToken) || decryptToken(fenced.accessToken), leaseToken };
   });
   if (!claimed) {
-    if (environmentGoogleCredentialAllowed(resolvedWorkspaceId)) throw new AppError("ENV_CREDENTIAL_MANAGED_EXTERNALLY", "Die über die Umgebung bereitgestellten Google-Zugangsdaten müssen außerhalb von SnagTime widerrufen werden.", 409);
+    if (environmentGoogleCredentialAllowed(resolvedWorkspaceId)) throw new AppError("ENV_CREDENTIAL_MANAGED_EXTERNALLY", "Die über die Umgebung bereitgestellten Google-Zugangsdaten müssen außerhalb von BookMe widerrufen werden.", 409);
     return { disconnected: true as const };
   }
   clearGoogleScopeHealthCache(resolvedWorkspaceId);

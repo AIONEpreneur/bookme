@@ -1,6 +1,6 @@
 # Integrations-Einrichtung
 
-SnagTime funktioniert lokal ohne externe Zugangsdaten. Aktiviere Integrationen erst, wenn der lokale Buchungsablauf funktioniert.
+BookMe funktioniert lokal ohne externe Zugangsdaten. Aktiviere Integrationen erst, wenn der lokale Buchungsablauf funktioniert.
 
 ## Google Calendar
 
@@ -28,7 +28,7 @@ https://your-domain.example/api/integrations/google/callback
 
 Schema, Host, Port und Pfad müssen exakt übereinstimmen. Wenn die OAuth-App im Testmodus ist, füge das Konto der Gastgeber:in als Testnutzer hinzu.
 
-### 2. SnagTime konfigurieren
+### 2. BookMe konfigurieren
 
 Setze diese Werte in `.env.local` für die lokale Entwicklung oder im Secret-Manager deines Hosters für das Deployment:
 
@@ -39,9 +39,9 @@ GOOGLE_CLIENT_SECRET="your-client-secret"
 GOOGLE_CALENDAR_ID="primary"
 ```
 
-Starte SnagTime neu, melde dich an, öffne `/integrations` und wähle in der Karte **Google Kalender** die Option **Verbinden**.
+Starte BookMe neu, melde dich an, öffne `/integrations` und wähle in der Karte **Google Kalender** die Option **Verbinden**.
 
-SnagTime fordert folgende Berechtigungen an:
+BookMe fordert folgende Berechtigungen an:
 
 - `openid`
 - `email`
@@ -52,7 +52,7 @@ Prüfe, dass der Integrationsstatus als vollständig gemeldet wird, erstelle ein
 
 ## Transaktionale E-Mails
 
-Google-Calendar-Einladungen verschickt Google über den verbundenen Kalender. Die Benachrichtigungen an Gastgeber:innen, Bestätigungen an Gäste, Workspace-Einladungen, Verifizierungs- und Wiederherstellungs-Nachrichten von SnagTime laufen über deinen SMTP-Anbieter.
+Google-Calendar-Einladungen verschickt Google über den verbundenen Kalender. Die Benachrichtigungen an Gastgeber:innen, Bestätigungen an Gäste, Workspace-Einladungen, Verifizierungs- und Wiederherstellungs-Nachrichten von BookMe laufen über deinen SMTP-Anbieter.
 
 Konfiguriere:
 
@@ -64,7 +64,7 @@ SMTP_PORT="587"
 SMTP_TLS_MODE="starttls"
 SMTP_USER="your-smtp-user"
 SMTP_PASSWORD="your-smtp-password"
-EMAIL_FROM="SnagTime <notifications@your-domain.example>"
+EMAIL_FROM="BookMe <notifications@your-domain.example>"
 EMAIL_REPLY_TO="support@your-domain.example"
 EMAIL_SENDER_DOMAIN="your-domain.example"
 ```
@@ -99,7 +99,7 @@ stripe login
 stripe listen --forward-to http://localhost:3000/api/webhooks/stripe
 ```
 
-Kopiere das Signing-Secret, das Stripe CLI ausgibt, in `STRIPE_WEBHOOK_SECRET`, starte SnagTime neu und lege eine Termin-Dauer mit einem Testpreis größer als null an.
+Kopiere das Signing-Secret, das Stripe CLI ausgibt, in `STRIPE_WEBHOOK_SECRET`, starte BookMe neu und lege eine Termin-Dauer mit einem Testpreis größer als null an.
 
 Für ein gehostetes Deployment erstellst du einen Stripe-Webhook-Endpunkt unter:
 

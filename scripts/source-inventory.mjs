@@ -22,7 +22,7 @@ const sourceFiles = [
   "docs/AI-SETUP.md",
   "docs/DEPLOYMENT.md",
   "docs/INTEGRATION-SETUP.md",
-  "docs/SNAGTIME-BRAND.md",
+  "docs/BOOKME-BRAND.md",
   "tsconfig.base.json",
   "vitest.config.ts",
 ];

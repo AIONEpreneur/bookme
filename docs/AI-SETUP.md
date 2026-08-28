@@ -1,4 +1,4 @@
-# SnagTime mit Codex oder Claude Code einrichten
+# BookMe mit Codex oder Claude Code einrichten
 
 Mit dieser Anleitung übernimmt ein KI-Coding-Assistent die technische Einrichtung, während du die Kontrolle über Konten, Zugangsdaten, Zahlungen und Deployment-Entscheidungen behältst.
 
@@ -9,7 +9,7 @@ Starte mit der kostenlosen lokalen Demo. Sie braucht keine Zugangsdaten für Goo
 Füge den folgenden Prompt in Codex oder Claude Code ein. Falls der Assistent nicht bereits in einem Klon des Repositories arbeitet, gib `https://github.com/aionepreneur/bookme` mit dem Prompt an.
 
 ```text
-Richte SnagTime für mich ein, aus https://github.com/aionepreneur/bookme.
+Richte BookMe für mich ein, aus https://github.com/aionepreneur/bookme.
 
 Lies README.md, docs/AI-SETUP.md, docs/INTEGRATION-SETUP.md, docs/DEPLOYMENT.md und SECURITY.md, bevor du Änderungen machst.
 
@@ -76,7 +76,7 @@ Falls `.env.local` bereits existiert, muss der Assistent die Datei erhalten. Er 
 npm run setup:check
 ```
 
-Bei Erfolg meldet der Befehl, dass der SnagTime-Free-Demo-Preflight bestanden wurde. Er prüft die erforderlichen Werte und die Stärke der Secrets, ohne konfigurierte Werte auszugeben.
+Bei Erfolg meldet der Befehl, dass der BookMe-Free-Demo-Preflight bestanden wurde. Er prüft die erforderlichen Werte und die Stärke der Secrets, ohne konfigurierte Werte auszugeben.
 
 ### 4. App vorbereiten und starten
 
@@ -84,7 +84,7 @@ Bei Erfolg meldet der Befehl, dass der SnagTime-Free-Demo-Preflight bestanden wu
 npm run demo:free
 ```
 
-Das installiert die Abhängigkeiten, generiert den SQLite-Client, wendet Migrationen an, legt das Konto der Gastgeber:in an und startet SnagTime unter [http://localhost:3000](http://localhost:3000).
+Das installiert die Abhängigkeiten, generiert den SQLite-Client, wendet Migrationen an, legt das Konto der Gastgeber:in an und startet BookMe unter [http://localhost:3000](http://localhost:3000).
 
 Der Assistent sollte prüfen:
 
@@ -128,7 +128,7 @@ Folge der [Deployment-Anleitung](DEPLOYMENT.md).
 Falls die Einrichtung fehlschlägt, gib dem Assistenten diesen Folge-Prompt:
 
 ```text
-Diagnostiziere den fehlgeschlagenen SnagTime-Setup anhand der Befehlsausgaben, der versionierten Quelldateien und des dokumentierten Setup-Vertrags. Gib keine Credential-Werte aus und lies keine. Berichte die fehlgeschlagene Phase, die wahrscheinliche Ursache und die kleinste sichere Korrektur. Erhalte .env.local und alle vorhandenen Daten. Setze die Datenbank nicht zurück und installiere nicht alles neu, ohne vorher zu erklären warum und meine Zustimmung zu bekommen.
+Diagnostiziere den fehlgeschlagenen BookMe-Setup anhand der Befehlsausgaben, der versionierten Quelldateien und des dokumentierten Setup-Vertrags. Gib keine Credential-Werte aus und lies keine. Berichte die fehlgeschlagene Phase, die wahrscheinliche Ursache und die kleinste sichere Korrektur. Erhalte .env.local und alle vorhandenen Daten. Setze die Datenbank nicht zurück und installiere nicht alles neu, ohne vorher zu erklären warum und meine Zustimmung zu bekommen.
 ```
 
 ## Wann ist es fertig?
@@ -136,7 +136,7 @@ Diagnostiziere den fehlgeschlagenen SnagTime-Setup anhand der Befehlsausgaben, d
 Die lokale Einrichtung ist abgeschlossen, wenn:
 
 - `npm run setup:check` besteht.
-- SnagTime lokal öffnet und sich die Gastgeber:in anmelden kann.
+- BookMe lokal öffnet und sich die Gastgeber:in anmelden kann.
 - Die Gastgeber:in eine Terminart erstellen und deren öffentlichen Buchungslink öffnen kann.
 - Eine Testbuchung erstellt, umgebucht und storniert werden kann.
 - Der Assistent klar kennzeichnet, was lokale Adapter und was verbundene externe Dienste sind.

@@ -17,7 +17,7 @@ const templateKeys = [
 const requiredKeys = ["DATABASE_URL", "TOKEN_ENCRYPTION_KEY", "NEXT_PUBLIC_APP_URL", "DEMO_MODE", "DEMO_HOST_EMAIL", "DEMO_HOST_PASSWORD", "CALENDAR_PROVIDER", "OUTBOX_WORKER_ENABLED", "OUTBOX_POLL_INTERVAL_MS", "PAYMENTS_PROVIDER", "EMAIL_PROVIDER"];
 
 function fail(messages) {
-  console.error("SnagTime-Demo-Preflight fehlgeschlagen:");
+  console.error("BookMe-Demo-Preflight fehlgeschlagen:");
   for (const message of messages) console.error(`- ${message}`);
   process.exitCode = 1;
 }
@@ -40,7 +40,7 @@ catch { fail(["Die ausgewählte Umgebungsdatei fehlt oder ist ungültig."]); pro
 const values = templateMode ? localParsed.values : new Map(Object.entries(process.env).map(([key, value]) => [key, value ?? ""]));
 if (!templateMode) for (const [key, value] of localParsed.values) if (!values.has(key)) values.set(key, value);
 const duplicates = localParsed.duplicates.filter((key) => templateKeys.includes(key)); const errors = [];
-if (duplicates.length) errors.push(`Doppelte SnagTime-Variablen: ${[...new Set(duplicates)].sort().join(", ")}`);
+if (duplicates.length) errors.push(`Doppelte BookMe-Variablen: ${[...new Set(duplicates)].sort().join(", ")}`);
 const missing = (templateMode ? templateKeys : requiredKeys).filter((key) => !values.has(key)); if (missing.length) errors.push(`Fehlende Variablen: ${missing.join(", ")}`);
 
 if (!templateMode) {
@@ -73,4 +73,4 @@ if (!templateMode) {
 }
 
 if (errors.length) fail(errors);
-else console.log(templateMode ? "Der SnagTime-Umgebungsvorlagen-Vertrag ist gültig." : `${freeMode ? "SnagTime-Free-Demo" : "SnagTime-Demo"}-Preflight erfolgreich gegen die lokale Umgebung geprüft; es wurden keine konfigurierten Werte ausgegeben.`);
+else console.log(templateMode ? "Der BookMe-Umgebungsvorlagen-Vertrag ist gültig." : `${freeMode ? "BookMe-Free-Demo" : "BookMe-Demo"}-Preflight erfolgreich gegen die lokale Umgebung geprüft; es wurden keine konfigurierten Werte ausgegeben.`);

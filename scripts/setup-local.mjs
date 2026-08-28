@@ -17,7 +17,7 @@ function valueAfter(flag) {
 
 const force = args.includes("--force");
 const email = valueAfter("--email") || "owner@example.com";
-const generatedPassword = `Snag!7${randomBytes(12).toString("base64url")}`;
+const generatedPassword = `Book!7${randomBytes(12).toString("base64url")}`;
 const password = valueAfter("--password") || generatedPassword;
 
 if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error("--email muss eine gültige E-Mail-Adresse sein.");

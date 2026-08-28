@@ -1,6 +1,6 @@
-# Zu SnagTime beitragen
+# Zu BookMe beitragen
 
-Danke, dass du hilfst, SnagTime besser zu machen.
+Danke, dass du hilfst, BookMe besser zu machen.
 
 Dieses Repository ist die deutsche Community-Edition von [SnagTime](https://github.com/nateherkai/snagtime). Issues und Pull Requests für diese Variante richtest du bitte an [aionepreneur/bookme](https://github.com/aionepreneur/bookme).
 

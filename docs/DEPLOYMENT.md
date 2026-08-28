@@ -2,7 +2,7 @@
 
 ## Die richtige Deployment-Form wählen
 
-SnagTime ist eine zustandsbehaftete Next.js-Anwendung mit API-Routen, einer relationalen Datenbank, OAuth-Callbacks, Webhooks und asynchroner Kalender- und E-Mail-Verarbeitung.
+BookMe ist eine zustandsbehaftete Next.js-Anwendung mit API-Routen, einer relationalen Datenbank, OAuth-Callbacks, Webhooks und asynchroner Kalender- und E-Mail-Verarbeitung.
 
 Sie kann nicht als statische Dateien deployt werden. ChatGPT Sites ist mit dieser Anwendung nicht kompatibel. Vercel wird nicht ohne Weiteres unterstützt, weil das geprüfte Produktiv-Design einen kontinuierlich laufenden Worker und PostgreSQL-Verbindungen mit getrennten Rollen voraussetzt.
 

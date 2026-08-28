@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="apps/web/public/snagtime-logo.svg" alt="SnagTime" width="305" />
+  <img src="apps/web/public/bookme-logo.svg" alt="BookMe" width="305" />
 
   <p><strong>Schnapp dir einen Termin. Werde gebucht.</strong></p>
   <p>Eine kostenlose, selbst hostbare Terminbuchungs-App für Verfügbarkeiten, Buchungslinks, Kalender-Synchronisation, E-Mail-Benachrichtigungen und Testzahlungen.</p>
@@ -7,15 +7,15 @@
 
 ## Über diese deutsche Community-Edition
 
-Dies ist die deutsche Community-Edition von **SnagTime** von [nateherkai](https://github.com/nateherkai/snagtime), veröffentlicht unter der MIT-Lizenz. Die Benutzeroberfläche und die E-Mails wurden ins Deutsche übersetzt (in der Du-Form), damit deutschsprachige Solopreneure, Coaches und kleine Teams das Tool ohne Sprachbarriere nutzen können.
+**BookMe** ist die deutsche Community-Edition von **SnagTime** von [nateherkai](https://github.com/nateherkai/snagtime), veröffentlicht unter der MIT-Lizenz. Die Benutzeroberfläche und die E-Mails wurden ins Deutsche übersetzt (in der Du-Form), damit deutschsprachige Solopreneure, Coaches und kleine Teams das Tool ohne Sprachbarriere nutzen können.
 
 - Original-Projekt: [https://github.com/nateherkai/snagtime](https://github.com/nateherkai/snagtime)
 - Diese deutsche Variante: [https://github.com/aionepreneur/bookme](https://github.com/aionepreneur/bookme)
 - Lizenz: [MIT](LICENSE) — der ursprüngliche Lizenztext bleibt unverändert erhalten.
 
-## Was SnagTime kann
+## Was BookMe kann
 
-SnagTime gibt dir den Quellcode für dein eigenes Terminbuchungssystem. Du kannst es kostenlos lokal laufen lassen, anpassen und auf Infrastruktur hosten, die du selbst kontrollierst.
+BookMe gibt dir den Quellcode für dein eigenes Terminbuchungssystem. Du kannst es kostenlos lokal laufen lassen, anpassen und auf Infrastruktur hosten, die du selbst kontrollierst.
 
 - Registrierung, Anmeldung, Passwort-Wiederherstellung und E-Mail-Bestätigung
 - Workspaces, Mitglieder, Einladungen und Workspace-Wechsel
@@ -68,7 +68,7 @@ Der Setup-Befehl erstellt eine von Git ignorierte `.env.local`, generiert unabh�
 npm run setup -- --email you@example.com --password "YourStrong!Password7"
 ```
 
-### 3. Installieren, Datenbank vorbereiten und SnagTime starten
+### 3. Installieren, Datenbank vorbereiten und BookMe starten
 
 ```bash
 npm run demo:free
@@ -94,7 +94,7 @@ In der [Integrations-Einrichtung](docs/INTEGRATION-SETUP.md) findest du die exak
 
 ## Ins Internet bringen
 
-SnagTime ist eine dynamische Anwendung, keine statische Website. Sie braucht serverseitiges Node.js, eine dauerhafte Datenbank, Webhook-Endpunkte und einen kontinuierlich laufenden Hintergrund-Worker.
+BookMe ist eine dynamische Anwendung, keine statische Website. Sie braucht serverseitiges Node.js, eine dauerhafte Datenbank, Webhook-Endpunkte und einen kontinuierlich laufenden Hintergrund-Worker.
 
 - ChatGPT Sites ist als Produktiv-Hosting für dieses Repository nicht geeignet.
 - Vercel wird nicht ohne Weiteres unterstützt, weil das aktuelle Produktiv-Design einen dauerhaft laufenden Worker und PostgreSQL-Laufzeitrollen voraussetzt.
@@ -104,7 +104,7 @@ Die vollständige Produktiv-Architektur ist bewusst streng: PostgreSQL 18, erzwu
 
 ## Was ist wirklich kostenlos?
 
-Der SnagTime-Quellcode ist unter der MIT-Lizenz kostenlos. Auch der lokale Betrieb kann komplett kostenlos sein.
+Der BookMe-Quellcode ist unter der MIT-Lizenz kostenlos. Auch der lokale Betrieb kann komplett kostenlos sein.
 
 Ein öffentliches Deployment kann trotzdem Kosten bei Drittanbietern verursachen:
 
@@ -114,7 +114,7 @@ Ein öffentliches Deployment kann trotzdem Kosten bei Drittanbietern verursachen
 - Versandvolumen für transaktionale E-Mails
 - Anbietergebühren für alle Dienste, die du verbindest
 
-Google-OAuth-Zugangsdaten kannst du erstellen, ohne für SnagTime zu bezahlen. Der Stripe-Testmodus ist zum Testen kostenlos.
+Google-OAuth-Zugangsdaten kannst du erstellen, ohne für BookMe zu bezahlen. Der Stripe-Testmodus ist zum Testen kostenlos.
 
 > **Wichtig: Stripe funktioniert ausschließlich im TESTMODUS.** Diese Version lehnt Stripe-Live-Schlüssel absichtlich ab. Bewirb sie nicht als echten Zahlungsanbieter, ohne vorher Live-Modus-Unterstützung zu implementieren und sicherheitstechnisch prüfen zu lassen.
 
@@ -146,7 +146,7 @@ npm run db:seed
 
 ```text
 apps/web/             Next.js application and API routes
-apps/web/public/      SnagTime logo and icon
+apps/web/public/      BookMe logo and icon
 prisma/               SQLite schema, PostgreSQL schema, and migrations
 scripts/              Setup, database, worker, security, and verification tools
 infrastructure/       PostgreSQL container hardening
@@ -166,4 +166,4 @@ Issues und Pull Requests sind willkommen. Siehe [CONTRIBUTING.md](CONTRIBUTING.m
 
 ## Lizenz
 
-SnagTime ist unter der [MIT-Lizenz](LICENSE) verfügbar.
+BookMe ist unter der [MIT-Lizenz](LICENSE) verfügbar.

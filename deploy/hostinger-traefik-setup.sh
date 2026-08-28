@@ -92,7 +92,7 @@ grep -q '^DEV_ALLOWED_ORIGIN=' .env.local || echo "DEV_ALLOWED_ORIGIN=\"${DOMAIN
 sed -i "s|^DEV_ALLOWED_ORIGIN=.*|DEV_ALLOWED_ORIGIN=\"${DOMAIN}\"|" .env.local
 
 echo "==> 5/6 BookMe-Container starten"
-docker compose -f compose.demo.yml up -d
+docker compose -f compose.demo.yml up -d --force-recreate
 
 echo "==> 6/6 Warte auf den App-Start (erster Start installiert und kompiliert — bis zu 10 Minuten) …"
 ok=""

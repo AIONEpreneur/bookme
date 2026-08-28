@@ -100,6 +100,8 @@ BookMe ist eine dynamische Anwendung, keine statische Website. Sie braucht serve
 - Vercel wird nicht ohne Weiteres unterstützt, weil das aktuelle Produktiv-Design einen dauerhaft laufenden Worker und PostgreSQL-Laufzeitrollen voraussetzt.
 - Ein Linux-VPS oder eine Container-Plattform mit Webservice, Worker-Service, persistentem PostgreSQL, Secrets und HTTPS ist die richtige Umgebung.
 
+**Schneller Vorführ-Weg:** Für eine klickbare Demo auf deiner eigenen Domain (ohne Google-, Stripe- und SMTP-Konten) gibt es die [Hostinger-VPS-Anleitung](deploy/HOSTINGER-ANLEITUNG.md) mit fertigem Setup-Skript.
+
 Die vollständige Produktiv-Architektur ist bewusst streng: PostgreSQL 18, erzwungene Row-Level Security, getrennte Zugangsdaten für App und Worker, verifiziertes Datenbank-TLS und authentifizierter Proxy-Zugang. Lies die [Deployment-Anleitung](docs/DEPLOYMENT.md), bevor du dich für einen Hoster entscheidest.
 
 ## Was ist wirklich kostenlos?

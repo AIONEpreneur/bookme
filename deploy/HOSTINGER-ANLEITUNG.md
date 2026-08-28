@@ -38,16 +38,25 @@ echo "— Ports 80/443/3000-3012 —"; ss -tlnp 2>/dev/null | grep -E ':(80|443|
 
 ## Schritt 2: Setup-Skript auf dem Server ausführen (5–10 Minuten)
 
-1. Öffne in hPanel deinen VPS und starte den **Browser-Terminal** (Anmeldung als `root`).
-2. Füge diesen einen Befehl ein und drücke Enter:
+Öffne in hPanel deinen VPS und starte den **Browser-Terminal** (Anmeldung als `root`). Es gibt zwei Varianten — welche du brauchst, hängt davon ab, was auf dem Server schon läuft:
+
+**Variante A — leerer Server (kein Webserver auf Port 80/443):**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/AIONEpreneur/bookme/main/deploy/hostinger-setup.sh | bash
 ```
 
-Für eine andere Domain hänge sie an: `… | bash -s -- deine-subdomain.deine-domain.de`
+Installiert Node.js und den HTTPS-Proxy Caddy, richtet Datenbank und Systemdienst ein und startet alles.
 
-Das Skript installiert Node.js und den HTTPS-Proxy Caddy, holt BookMe aus deinem GitHub-Repository, richtet Datenbank und Systemdienst ein und startet alles.
+**Variante B — auf dem Server läuft bereits Traefik mit Docker-Apps:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AIONEpreneur/bookme/main/deploy/hostinger-traefik-setup.sh | bash
+```
+
+Startet BookMe als eigenen Docker-Container, der sich per Labels beim vorhandenen Traefik anmeldet — ohne Host-Port und ohne Änderungen an Traefik oder anderen Containern. Standardwerte: Domain `bookme.aionepreneur.com`, Netzwerk `app_extern`, Zertifikats-Resolver `mytlschallenge`; andere Werte als Argumente anhängen: `… | bash -s -- meine-domain.de mein-netz mein-resolver`
+
+Beide Skripte prüfen die Voraussetzungen zuerst und brechen ab, bevor sie etwas verändern, wenn sie nicht passen. Für eine andere Domain bei Variante A: `… | bash -s -- deine-subdomain.deine-domain.de`
 
 ## Schritt 3: Anmelden
 
@@ -58,7 +67,8 @@ Das Skript installiert Node.js und den HTTPS-Proxy Caddy, holt BookMe aus deinem
 ## Gut zu wissen
 
 - **Updates einspielen:** Einfach den Befehl aus Schritt 2 erneut ausführen — Daten bleiben erhalten.
-- **Status prüfen:** `systemctl status bookme` · Logs: `journalctl -u bookme -n 50`
-- **Neustart:** `systemctl restart bookme`
+- **Status prüfen (Variante A):** `systemctl status bookme` · Logs: `journalctl -u bookme -n 50` · Neustart: `systemctl restart bookme`
+- **Status prüfen (Variante B):** `docker compose -f /opt/bookme/compose.demo.yml ps` · Logs: `docker compose -f /opt/bookme/compose.demo.yml logs --tail 80` · Neustart: `docker compose -f /opt/bookme/compose.demo.yml restart`
 - **Offene Registrierung:** Im Vorführ-Modus kann jede:r auf der Seite einen Workspace anlegen. Für eine reine Demo ist das okay — wenn du das nicht willst, stoppe die App nach der Vorführung (`systemctl stop bookme`) oder frag nach einer Absicherung.
-- **Alles entfernen:** `systemctl disable --now bookme && rm -rf /opt/bookme /etc/systemd/system/bookme.service` und den DNS-Eintrag löschen.
+- **Alles entfernen (Variante A):** `systemctl disable --now bookme && rm -rf /opt/bookme /etc/systemd/system/bookme.service` und den DNS-Eintrag löschen.
+- **Alles entfernen (Variante B):** `docker compose -f /opt/bookme/compose.demo.yml down && rm -rf /opt/bookme` und den DNS-Eintrag löschen.

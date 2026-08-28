@@ -107,7 +107,7 @@ export type WorkspaceAccess = {
 export async function requireWorkspaceAccess(request: Request, minimumRole: WorkspaceRole = "MEMBER"): Promise<WorkspaceAccess> {
   const session = await requireSessionRecord(request);
   const role = session.membership.role as WorkspaceRole;
-  if (!(role in roleRank) || roleRank[role] < roleRank[minimumRole]) throw new AppError("FORBIDDEN", "You do not have access to this workspace action.", 403);
+  if (!(role in roleRank) || roleRank[role] < roleRank[minimumRole]) throw new AppError("FORBIDDEN", "Du hast keinen Zugriff auf diese Workspace-Aktion.", 403);
   return { sessionId: session.id, user: session.user, membership: session.membership, workspace: session.workspace, workspaceId: session.activeWorkspaceId, role };
 }
 
@@ -120,7 +120,7 @@ export async function rotateSessionWorkspace(request: Request, workspaceId: stri
   assertSameOrigin(request);
   const current = await requireSessionRecord(request);
   const membership = await db.membership.findFirst({ where: { workspaceId, userId: current.userId, status: "ACTIVE" } });
-  if (!membership) throw new AppError("FORBIDDEN", "You do not have access to that workspace.", 403);
+  if (!membership) throw new AppError("FORBIDDEN", "Du hast keinen Zugriff auf diesen Workspace.", 403);
   const token = createSessionToken(current.userId); const payload = readSessionToken(token)!; const now = new Date();
   await db.$transaction(async (tx) => {
     const revoked = await tx.authSession.updateMany({ where: { id: current.id, revokedAt: null }, data: { revokedAt: now } });

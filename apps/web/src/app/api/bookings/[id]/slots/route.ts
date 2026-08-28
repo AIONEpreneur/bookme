@@ -16,10 +16,10 @@ export async function GET(request: Request, context: Context) {
     const authorityKey = organizer ? (await getBookingForHost(organizer.activeWorkspaceId, id), `organizer:${organizer.id}`) : `manage:${id}:${(await requireBookingManageSession(request, id, "reschedule")).id}`;
     await enforceRateLimit(`manage-slots:${authorityKey}`, 240, 60_000);
     const url = new URL(request.url); const timeZone = url.searchParams.get("timeZone") || "UTC";
-    if (!IANAZone.isValidZone(timeZone)) throw new AppError("INVALID_TIME_ZONE", "Choose a valid IANA time zone.", 400);
+    if (!IANAZone.isValidZone(timeZone)) throw new AppError("INVALID_TIME_ZONE", "Wähle eine gültige IANA-Zeitzone.", 400);
     const from = DateTime.fromISO(url.searchParams.get("from") || "", { zone: "utc" });
     const to = DateTime.fromISO(url.searchParams.get("to") || "", { zone: "utc" });
-    if (!from.isValid || !to.isValid || to <= from || to.diff(from, "days").days > 31) throw new AppError("INVALID_SLOT_RANGE", "Choose a valid slot range of no more than 31 days.", 400);
+    if (!from.isValid || !to.isValid || to <= from || to.diff(from, "days").days > 31) throw new AppError("INVALID_SLOT_RANGE", "Wähle einen gültigen Zeitraum von höchstens 31 Tagen.", 400);
     return ok(await listManageRescheduleSlots(id, from.toJSDate(), to.toJSDate(), timeZone, url.searchParams.get("durationId") || undefined));
   } catch (error) { return apiError(error); }
 }

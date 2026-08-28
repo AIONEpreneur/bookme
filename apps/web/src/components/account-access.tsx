@@ -24,15 +24,15 @@ function GenericRequestForm({ kind }: { kind: "password" | "verification" }) {
       if (kind === "password") await frontendApi.requestPasswordReset(email.trim());
       else await frontendApi.requestEmailVerification(email.trim());
       setAccepted(true);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "The request could not be accepted."); }
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Die Anfrage konnte nicht angenommen werden."); }
     finally { setWorking(false); }
   };
-  if (accepted) return <div className="recovery-result" role="status" aria-live="polite"><strong>Request accepted</strong><p>If the address is eligible, SnagTime will make instructions available through its configured email provider. This page does not confirm an account or delivery.</p><Link className="button button-primary" href="/dashboard">Return to sign in</Link></div>;
-  return <form onSubmit={submit}><label>Email address<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>{error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}<button className="button button-primary" type="submit" disabled={working || !email.includes("@")}>{working ? "Submitting…" : kind === "password" ? "Request reset instructions" : "Request verification instructions"}</button></form>;
+  if (accepted) return <div className="recovery-result" role="status" aria-live="polite"><strong>Anfrage angenommen</strong><p>Wenn die Adresse berechtigt ist, stellt SnagTime Anweisungen über den konfigurierten E-Mail-Anbieter bereit. Diese Seite bestätigt weder ein Konto noch eine Zustellung.</p><Link className="button button-primary" href="/dashboard">Zurück zur Anmeldung</Link></div>;
+  return <form onSubmit={submit}><label>E-Mail-Adresse<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>{error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}<button className="button button-primary" type="submit" disabled={working || !email.includes("@")}>{working ? "Wird gesendet…" : kind === "password" ? "Anweisungen zum Zurücksetzen anfordern" : "Anweisungen zur Bestätigung anfordern"}</button></form>;
 }
 
 export function ForgotPasswordView() {
-  return <AccessFrame eyebrow="Account recovery" title="Reset your password" description="Submit your email address. The response is identical whether or not an eligible account exists."><GenericRequestForm kind="password" /><p className="auth-switch"><Link href="/dashboard">Back to sign in</Link></p></AccessFrame>;
+  return <AccessFrame eyebrow="Kontowiederherstellung" title="Setze dein Passwort zurück" description="Gib deine E-Mail-Adresse ein. Die Antwort ist identisch, unabhängig davon, ob ein berechtigtes Konto existiert."><GenericRequestForm kind="password" /><p className="auth-switch"><Link href="/dashboard">Zurück zur Anmeldung</Link></p></AccessFrame>;
 }
 
 export function ResetPasswordView() {
@@ -47,7 +47,7 @@ export function ResetPasswordView() {
     const claim = () => {
       const claimed = claimOneUseLinkAuthority("token");
       setAuthority(claimed);
-      setError(claimed ? "" : "This password reset link is incomplete.");
+      setError(claimed ? "" : "Dieser Link zum Zurücksetzen des Passworts ist unvollständig.");
       setPassword(""); setReset(false); setReady(true);
     };
     if (!started.current) { started.current = true; claim(); }
@@ -56,15 +56,15 @@ export function ResetPasswordView() {
   }, []);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!authority || !strongPassword(password)) { setError("Use a complete reset link and a password that meets every requirement."); return; }
+    if (!authority || !strongPassword(password)) { setError("Verwende einen vollständigen Link zum Zurücksetzen und ein Passwort, das alle Anforderungen erfüllt."); return; }
     setWorking(true); setError("");
     try { await shareOneUseAction("password-reset", authority, () => frontendApi.resetPassword(authority, password)); setPassword(""); setReset(true); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "This link is invalid or expired."); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Dieser Link ist ungültig oder abgelaufen."); }
     finally { setWorking(false); }
   };
-  if (!ready) return <AccessFrame eyebrow="Account recovery" title="Preparing password reset" description="Removing the one-time authority from the browser address."><div className="sync-note" role="status"><span className="spinner" />Preparing…</div></AccessFrame>;
-  if (reset) return <AccessFrame eyebrow="Password reset" title="Password updated" description="Your password was reset and previous sessions were revoked. Sign in again with the new password."><Link className="button button-primary" href="/dashboard">Sign in</Link></AccessFrame>;
-  return <AccessFrame eyebrow="Account recovery" title="Choose a new password" description="The one-time authority was removed from the browser address before this form was shown."><form onSubmit={submit}><label>New password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={12} maxLength={200} aria-describedby="reset-password-rules" required /></label><p className="password-rules" id="reset-password-rules">Use at least 12 characters with uppercase, lowercase, a number, and a symbol.</p>{error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}<button className="button button-primary" type="submit" disabled={working || !authority || !strongPassword(password)}>{working ? "Resetting…" : "Reset password"}</button></form><p className="auth-switch"><Link href="/forgot-password">Request another link</Link></p></AccessFrame>;
+  if (!ready) return <AccessFrame eyebrow="Kontowiederherstellung" title="Zurücksetzen wird vorbereitet" description="Die einmalige Berechtigung wird aus der Browser-Adresse entfernt."><div className="sync-note" role="status"><span className="spinner" />Wird vorbereitet…</div></AccessFrame>;
+  if (reset) return <AccessFrame eyebrow="Passwort zurückgesetzt" title="Passwort aktualisiert" description="Dein Passwort wurde zurückgesetzt und bisherige Sitzungen wurden beendet. Melde dich mit dem neuen Passwort erneut an."><Link className="button button-primary" href="/dashboard">Anmelden</Link></AccessFrame>;
+  return <AccessFrame eyebrow="Kontowiederherstellung" title="Wähle ein neues Passwort" description="Die einmalige Berechtigung wurde aus der Browser-Adresse entfernt, bevor dieses Formular angezeigt wurde."><form onSubmit={submit}><label>Neues Passwort<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={12} maxLength={200} aria-describedby="reset-password-rules" required /></label><p className="password-rules" id="reset-password-rules">Verwende mindestens 12 Zeichen mit Groß- und Kleinbuchstaben, einer Zahl und einem Sonderzeichen.</p>{error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}<button className="button button-primary" type="submit" disabled={working || !authority || !strongPassword(password)}>{working ? "Wird zurückgesetzt…" : "Passwort zurücksetzen"}</button></form><p className="auth-switch"><Link href="/forgot-password">Neuen Link anfordern</Link></p></AccessFrame>;
 }
 
 export function VerifyEmailView() {
@@ -76,16 +76,16 @@ export function VerifyEmailView() {
       const authority = claimOneUseLinkAuthority("token");
       if (!authority) { queueMicrotask(() => setStatus("idle")); return; }
       queueMicrotask(() => { setError(""); setStatus("working"); });
-      void shareOneUseAction("email-verification", authority, () => frontendApi.verifyEmail(authority)).then(() => setStatus("verified")).catch((reason) => { setError(reason instanceof Error ? reason.message : "This link is invalid or expired."); setStatus("error"); });
+      void shareOneUseAction("email-verification", authority, () => frontendApi.verifyEmail(authority)).then(() => setStatus("verified")).catch((reason) => { setError(reason instanceof Error ? reason.message : "Dieser Link ist ungültig oder abgelaufen."); setStatus("error"); });
     };
     if (!started.current) { started.current = true; verify(); }
     window.addEventListener("hashchange", verify);
     return () => window.removeEventListener("hashchange", verify);
   }, []);
-  if (status === "booting" || status === "working") return <AccessFrame eyebrow="Email verification" title="Verifying your email" description="The one-time authority is removed from the browser address before verification begins."><div className="sync-note" role="status"><span className="spinner" />Verifying…</div></AccessFrame>;
-  if (status === "idle") return <AccessFrame eyebrow="Email verification" title="Request verification instructions" description="Submit your address. The response does not disclose whether an account exists or requires verification."><GenericRequestForm kind="verification" /><p className="auth-switch"><Link href="/dashboard">Back to sign in</Link></p></AccessFrame>;
-  if (status === "verified") return <AccessFrame eyebrow="Email verified" title="Your email is verified" description="You can now sign in to the workspace created for this address."><Link className="button button-primary" href="/dashboard">Sign in</Link></AccessFrame>;
-  return <AccessFrame eyebrow="Unable to verify" title="This link cannot be used" description="Verification links are one-time and expire."><div className="form-error" role="alert">{error}</div><Link className="button button-secondary" href="/verify-email">Request another link</Link></AccessFrame>;
+  if (status === "booting" || status === "working") return <AccessFrame eyebrow="E-Mail-Bestätigung" title="Deine E-Mail wird bestätigt" description="Die einmalige Berechtigung wird aus der Browser-Adresse entfernt, bevor die Bestätigung beginnt."><div className="sync-note" role="status"><span className="spinner" />Wird bestätigt…</div></AccessFrame>;
+  if (status === "idle") return <AccessFrame eyebrow="E-Mail-Bestätigung" title="Anweisungen zur Bestätigung anfordern" description="Gib deine Adresse ein. Die Antwort verrät nicht, ob ein Konto existiert oder eine Bestätigung erfordert."><GenericRequestForm kind="verification" /><p className="auth-switch"><Link href="/dashboard">Zurück zur Anmeldung</Link></p></AccessFrame>;
+  if (status === "verified") return <AccessFrame eyebrow="E-Mail bestätigt" title="Deine E-Mail ist bestätigt" description="Du kannst dich jetzt im Workspace anmelden, der für diese Adresse erstellt wurde."><Link className="button button-primary" href="/dashboard">Anmelden</Link></AccessFrame>;
+  return <AccessFrame eyebrow="Bestätigung nicht möglich" title="Dieser Link kann nicht verwendet werden" description="Bestätigungslinks sind nur einmal gültig und laufen ab."><div className="form-error" role="alert">{error}</div><Link className="button button-secondary" href="/verify-email">Neuen Link anfordern</Link></AccessFrame>;
 }
 
 export function AcceptInvitationView() {
@@ -101,13 +101,13 @@ export function AcceptInvitationView() {
     try { await shareOneUseAction("workspace-invitation", authority.current, () => frontendApi.acceptWorkspaceInvitation(authority.current)); setStatus("accepted"); }
     catch (reason) {
       if (reason instanceof SnagTimeApiError && reason.status === 401) { setStatus("login"); return; }
-      setError(reason instanceof Error ? reason.message : "This invitation is invalid or expired."); setStatus("error");
+      setError(reason instanceof Error ? reason.message : "Diese Einladung ist ungültig oder abgelaufen."); setStatus("error");
     }
   }, []);
   useEffect(() => {
     const claim = () => {
       authority.current = claimOneUseLinkAuthority("token");
-      if (!authority.current) { setError("This invitation link is incomplete."); setStatus("error"); return; }
+      if (!authority.current) { setError("Dieser Einladungslink ist unvollständig."); setStatus("error"); return; }
       void accept();
     };
     if (!started.current) { started.current = true; claim(); }
@@ -117,10 +117,10 @@ export function AcceptInvitationView() {
   const login = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setError("");
     try { await frontendApi.login(email, password); setPassword(""); await accept(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "Sign in failed."); setStatus("login"); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Anmeldung fehlgeschlagen."); setStatus("login"); }
   };
-  if (status === "working") return <AccessFrame eyebrow="Workspace invitation" title="Checking your invitation" description="The one-time authority has been removed from the browser address."><div className="sync-note" role="status"><span className="spinner" />Checking…</div></AccessFrame>;
-  if (status === "accepted") return <AccessFrame eyebrow="Invitation accepted" title="You’re in" description="This workspace is now available from your account."><Link className="button button-primary" href="/dashboard">Open SnagTime</Link></AccessFrame>;
-  if (status === "login") return <AccessFrame eyebrow="Workspace invitation" title="Sign in to continue" description="Use the verified account matching the invitation. The authority remains only in this page’s memory."><form onSubmit={login}><label>Email address<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="username" required /></label><label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>{error && <div className="form-error" role="alert">{error}</div>}<button className="button button-primary" type="submit">Sign in and accept</button></form></AccessFrame>;
-  return <AccessFrame eyebrow="Unable to accept" title="This invitation cannot be used" description="Invitation links are bound to a verified account, single-use, and expire."><div className="form-error" role="alert">{error}</div><Link className="button button-secondary" href="/dashboard">Go to sign in</Link></AccessFrame>;
+  if (status === "working") return <AccessFrame eyebrow="Workspace-Einladung" title="Deine Einladung wird geprüft" description="Die einmalige Berechtigung wurde aus der Browser-Adresse entfernt."><div className="sync-note" role="status"><span className="spinner" />Wird geprüft…</div></AccessFrame>;
+  if (status === "accepted") return <AccessFrame eyebrow="Einladung angenommen" title="Du bist dabei" description="Dieser Workspace ist jetzt über dein Konto verfügbar."><Link className="button button-primary" href="/dashboard">SnagTime öffnen</Link></AccessFrame>;
+  if (status === "login") return <AccessFrame eyebrow="Workspace-Einladung" title="Melde dich an, um fortzufahren" description="Verwende das bestätigte Konto, das zur Einladung passt. Die Berechtigung verbleibt nur im Speicher dieser Seite."><form onSubmit={login}><label>E-Mail-Adresse<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="username" required /></label><label>Passwort<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>{error && <div className="form-error" role="alert">{error}</div>}<button className="button button-primary" type="submit">Anmelden und annehmen</button></form></AccessFrame>;
+  return <AccessFrame eyebrow="Annahme nicht möglich" title="Diese Einladung kann nicht verwendet werden" description="Einladungslinks sind an ein bestätigtes Konto gebunden, nur einmal gültig und laufen ab."><div className="form-error" role="alert">{error}</div><Link className="button button-secondary" href="/dashboard">Zur Anmeldung</Link></AccessFrame>;
 }

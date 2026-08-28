@@ -10,7 +10,7 @@ describe("POC rate limiting", () => {
   it("allows the bound then fails closed until the window resets", async () => {
     await enforceRateLimit("invitee", 2, 1000, 0);
     await enforceRateLimit("invitee", 2, 1000, 1);
-    await expect(enforceRateLimit("invitee", 2, 1000, 2)).rejects.toThrow(/Too many/);
+    await expect(enforceRateLimit("invitee", 2, 1000, 2)).rejects.toThrow(/Zu viele/);
     await expect(enforceRateLimit("invitee", 2, 1000, 1000)).resolves.toBeUndefined();
   });
   it("ignores spoofed forwarding headers unless proxy trust is explicit", () => {
@@ -35,7 +35,7 @@ describe("POC rate limiting", () => {
   it("rejects public event reads before resolving a slug after the coarse IP budget",async()=>{
     for(let index=0;index<120;index+=1)await enforceRateLimit("public-event:ip:anonymous-local",120,60_000);
     const response=await getPublicEvent(new Request("http://localhost:3000/api/public/not-resolved"),{params:Promise.resolve({slug:"not-resolved"})});
-    expect(response.status).toBe(429);expect(await response.json()).toEqual({error:{code:"RATE_LIMITED",message:"Too many requests. Try again shortly."}});
+    expect(response.status).toBe(429);expect(await response.json()).toEqual({error:{code:"RATE_LIMITED",message:"Zu viele Anfragen. Bitte versuche es gleich erneut."}});
   });
   it("shares one coarse IP budget across invalid manage detail and slot authorization",async()=>{
     for(let index=0;index<240;index+=1)await enforceRateLimit("manage-attempt:ip:anonymous-local",240,60_000);

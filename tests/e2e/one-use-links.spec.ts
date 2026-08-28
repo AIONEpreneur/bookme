@@ -35,12 +35,12 @@ test("one-use email and booking links use fragments, clean before consume, rejec
   const verifyRequests = trackNavigationRequests(page);
   await page.goto(`/verify-email#token=${encodeURIComponent(verification)}`);
   await expect(page).toHaveURL(`${baseURL}/verify-email`);
-  await expect(page.getByRole("heading", { name: "Your email is verified" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Deine E-Mail ist bestätigt" })).toBeVisible();
   verifyRequests.stop();
   await assertAuthorityClean(page, verification, verifyRequests.urls);
 
   await page.goto(`/verify-email#token=${encodeURIComponent(verification)}`);
-  await expect(page.getByRole("heading", { name: "This link cannot be used" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dieser Link kann nicht verwendet werden" })).toBeVisible();
   await assertAuthorityClean(page, verification, []);
 
   const legacyEmail = `legacy-${suffix}@example.com`;
@@ -48,7 +48,7 @@ test("one-use email and booking links use fragments, clean before consume, rejec
   const legacyVerification = await latestAccountToken(legacyEmail, "EMAIL_VERIFY");
   await page.goto(`/verify-email?token=${encodeURIComponent(legacyVerification)}`);
   await expect(page).toHaveURL(`${baseURL}/verify-email`);
-  await expect(page.getByRole("heading", { name: "Your email is verified" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Deine E-Mail ist bestätigt" })).toBeVisible();
   await assertAuthorityClean(page, legacyVerification, []);
 
   await untracedJson("/api/auth/password-reset/request", { method: "POST", body: JSON.stringify({ email }) });
@@ -56,36 +56,36 @@ test("one-use email and booking links use fragments, clean before consume, rejec
   const resetRequests = trackNavigationRequests(page);
   await page.goto(`/reset-password#token=${encodeURIComponent(reset)}`);
   await expect(page).toHaveURL(`${baseURL}/reset-password`);
-  await expect(page.getByRole("heading", { name: "Choose a new password" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Wähle ein neues Passwort" })).toBeVisible();
   resetRequests.stop();
   await assertAuthorityClean(page, reset, resetRequests.urls);
-  await page.getByLabel("New password").fill(replacementPassword);
-  await page.getByRole("button", { name: "Reset password" }).click();
-  await expect(page.getByRole("heading", { name: "Password updated" })).toBeVisible();
+  await page.getByLabel("Neues Passwort").fill(replacementPassword);
+  await page.getByRole("button", { name: "Passwort zurücksetzen" }).click();
+  await expect(page.getByRole("heading", { name: "Passwort aktualisiert" })).toBeVisible();
   await page.goto(`/reset-password#token=${encodeURIComponent(reset)}`);
-  await page.getByLabel("New password").fill(password);
-  await page.getByRole("button", { name: "Reset password" }).click();
+  await page.getByLabel("Neues Passwort").fill(password);
+  await page.getByRole("button", { name: "Passwort zurücksetzen" }).click();
   await expect(page.getByRole("alert")).toBeVisible();
   await assertAuthorityClean(page, reset, []);
 
   await context.clearCookies();
   await login(page, organizerEmail, organizerPassword);
   await page.goto("/settings");
-  await page.getByLabel("Invitee email").fill(email);
-  await page.getByLabel("Workspace role").selectOption("MEMBER");
-  await page.getByRole("button", { name: "Send invitation" }).click();
-  await expect(page.getByRole("status")).toContainText("Invitation created");
+  await page.getByLabel("E-Mail der eingeladenen Person").fill(email);
+  await page.getByLabel("Workspace-Rolle").selectOption("MEMBER");
+  await page.getByRole("button", { name: "Einladung senden" }).click();
+  await expect(page.getByRole("status")).toContainText("Einladung erstellt");
   const invitation = await latestInvitationToken(email);
   await context.clearCookies();
   await attachSession(context, email, replacementPassword);
   const invitationRequests = trackNavigationRequests(page);
   await page.goto(`/invite/accept#token=${encodeURIComponent(invitation)}`);
   await expect(page).toHaveURL(`${baseURL}/invite/accept`);
-  await expect(page.getByRole("heading", { name: "You’re in" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Du bist dabei" })).toBeVisible();
   invitationRequests.stop();
   await assertAuthorityClean(page, invitation, invitationRequests.urls);
   await page.goto(`/invite/accept#token=${encodeURIComponent(invitation)}`);
-  await expect(page.getByRole("heading", { name: "This invitation cannot be used" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Diese Einladung kann nicht verwendet werden" })).toBeVisible();
   await assertAuthorityClean(page, invitation, []);
 
   await context.clearCookies();
@@ -98,12 +98,12 @@ test("one-use email and booking links use fragments, clean before consume, rejec
   const recoveryRequests = trackNavigationRequests(page);
   await page.goto(`/manage/${booking.id}/reschedule#recovery=${encodeURIComponent(recovery)}`);
   await expect(page).toHaveURL(`${baseURL}/manage/${booking.id}/reschedule`);
-  await expect(page.getByRole("heading", { name: "Choose a new time" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Wähle eine neue Zeit" })).toBeVisible({ timeout: 60_000 });
   recoveryRequests.stop();
   await assertAuthorityClean(page, recovery, recoveryRequests.urls);
   await context.clearCookies();
   await page.goto(`/manage/${booking.id}/reschedule#recovery=${encodeURIComponent(recovery)}`);
-  await expect(page.getByRole("heading", { name: "Booking unavailable" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Buchung nicht verfügbar" })).toBeVisible();
   await assertAuthorityClean(page, recovery, []);
 
   expect(consoleMessages.some((message) => [verification, legacyVerification, reset, invitation, recovery].some((authority) => message.includes(authority)))).toBe(false);

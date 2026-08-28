@@ -51,7 +51,7 @@ async function main() {
     update: {},
     create: {
       workspaceId: workspace.id, ownerId: host.id,
-      name: "Strategy Call",
+      name: "Strategiegespräch",
       slug: "strategy-call",
       description: "Ein fokussiertes Gespräch über deinen nächsten besten Schritt.",
       durationMinutes: 30,

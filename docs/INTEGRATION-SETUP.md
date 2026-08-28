@@ -39,7 +39,7 @@ GOOGLE_CLIENT_SECRET="your-client-secret"
 GOOGLE_CALENDAR_ID="primary"
 ```
 
-Starte SnagTime neu, melde dich an, öffne `/integrations` und wähle **Connect Google Calendar**.
+Starte SnagTime neu, melde dich an, öffne `/integrations` und wähle in der Karte **Google Kalender** die Option **Verbinden**.
 
 SnagTime fordert folgende Berechtigungen an:
 

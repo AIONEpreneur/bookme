@@ -34,12 +34,12 @@ function enforceLocalRateLimit(key: string, limit: number, windowMs: number, now
     counters.set(key, { count: 1, resetsAt: now + windowMs });
     return;
   }
-  if (current.count >= limit) throw new AppError("RATE_LIMITED", "Too many requests. Try again shortly.", 429);
+  if (current.count >= limit) throw new AppError("RATE_LIMITED", "Zu viele Anfragen. Bitte versuche es gleich erneut.", 429);
   current.count += 1;
 }
 
 export function rateKeyHash(key: string) {
-  if (!key || key.length > 512) throw new AppError("RATE_LIMITED", "Too many requests. Try again shortly.", 429);
+  if (!key || key.length > 512) throw new AppError("RATE_LIMITED", "Zu viele Anfragen. Bitte versuche es gleich erneut.", 429);
   const secret = process.env.RATE_LIMIT_HASH_SECRET || ""; if (Buffer.byteLength(secret) < 32) throw new Error("RATE_LIMIT_HASH_SECRET must contain at least 32 bytes.");
   return createHmac("sha256", secret).update(`tempocove-rate-v1\0${key}`).digest("hex");
 }
@@ -53,7 +53,7 @@ export async function enforceRateLimit(key: string, limit: number, windowMs: num
   const keyHash = rateKeyHash(key); const at = new Date(now); const windowEnd = new Date(now + windowMs);
   try {
     const result = await db.$queryRawUnsafe<Array<{ accepted: boolean }>>("SELECT tempocove_rate_limit($1::text,$2::integer,$3::timestamptz,$4::timestamptz) AS accepted", keyHash, limit, at, windowEnd);
-    if (result[0]?.accepted !== true) throw new AppError("RATE_LIMITED", "Too many requests. Try again shortly.", 429);
+    if (result[0]?.accepted !== true) throw new AppError("RATE_LIMITED", "Zu viele Anfragen. Bitte versuche es gleich erneut.", 429);
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError("RATE_LIMIT_UNAVAILABLE", "Request protection is temporarily unavailable.", 503);

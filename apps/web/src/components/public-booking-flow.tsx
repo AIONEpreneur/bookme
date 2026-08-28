@@ -50,7 +50,7 @@ function slotView(slot: BookingSlot, formatters: SlotFormatters): SlotView {
 function timeZoneLabel(zone: string) {
   const city = zone === "UTC" ? "UTC" : zone.split("/").at(-1)!.replaceAll("_", " ");
   if (zone === "UTC") return city;
-  try { const offset = new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "shortOffset" }).formatToParts(new Date()).find((part) => part.type === "timeZoneName")?.value; return offset ? `${city} · ${offset}` : city; }
+  try { const offset = new Intl.DateTimeFormat("de-DE", { timeZone: zone, timeZoneName: "shortOffset" }).formatToParts(new Date()).find((part) => part.type === "timeZoneName")?.value; return offset ? `${city} · ${offset}` : city; }
   catch { return city; }
 }
 
@@ -71,7 +71,7 @@ function requiredAnswerComplete(question: EventType["questions"][number], answer
 
 function PublicBrandLogo({ branding }: { branding: WorkspaceBranding | null | undefined }) {
   const initial = branding?.workspaceName.charAt(0).toUpperCase() || "T";
-  return <span className="public-logo" style={{ background: branding?.accentColor, color: foregroundForBackground(branding?.accentColor) }}>{branding?.logoUrl ? <span role="img" aria-label={`${branding.workspaceName} logo`} style={{ display: "block", width: "100%", height: "100%", borderRadius: "inherit", background: `#fff center / contain no-repeat url(${JSON.stringify(branding.logoUrl)})` }} /> : initial}</span>;
+  return <span className="public-logo" style={{ background: branding?.accentColor, color: foregroundForBackground(branding?.accentColor) }}>{branding?.logoUrl ? <span role="img" aria-label={`Logo von ${branding.workspaceName}`} style={{ display: "block", width: "100%", height: "100%", borderRadius: "inherit", background: `#fff center / contain no-repeat url(${JSON.stringify(branding.logoUrl)})` }} /> : initial}</span>;
 }
 
 export function PublicBookingFlow({ slug }: { slug: string }) {
@@ -99,8 +99,8 @@ export function PublicBookingFlow({ slug }: { slug: string }) {
   const [error, setError] = useState("");
   const slotFormatters = useMemo<SlotFormatters>(() => ({
     key: new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }),
-    day: new Intl.DateTimeFormat("en-US", { timeZone: timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" }),
-    time: new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "numeric", minute: "2-digit" }),
+    day: new Intl.DateTimeFormat("de-DE", { timeZone: timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" }),
+    time: new Intl.DateTimeFormat("de-DE", { timeZone: timezone, hour: "numeric", minute: "2-digit" }),
   }), [timezone]);
   useEffect(() => { if (!flowMounted.current) { flowMounted.current = true; return; } window.requestAnimationFrame(() => stepHeadingRef.current?.focus()); }, [step]);
 
@@ -111,7 +111,7 @@ export function PublicBookingFlow({ slug }: { slug: string }) {
       setEvent(item);
       setLoadingSlots(true);
       setDuration(item.durations.find((option) => option.isDefault) ?? item.durations[0] ?? null);
-    }).catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "This booking page is unavailable."); }).finally(() => { if (active) setLoadingEvent(false); });
+    }).catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Diese Buchungsseite ist nicht verfügbar."); }).finally(() => { if (active) setLoadingEvent(false); });
     return () => { active = false; };
   }, [slug]);
 
@@ -121,7 +121,7 @@ export function PublicBookingFlow({ slug }: { slug: string }) {
     const controller = new AbortController();
     loadBookingWindowSlots(slug, event.bookingWindowDays, timezone, duration.id, controller.signal)
       .then((items) => { if (!active) return; setError(""); setSlots(items); const first = items.find((slot) => !duration.id || slot.durationId === duration.id); setSelectedDate(first ? dateKey(first.start, slotFormatters.key) : ""); setSelectedStart(""); setDayOffset(0); })
-      .catch((reason) => { if (!active || (reason instanceof DOMException && reason.name === "AbortError")) return; setSlots([]); setError(reason instanceof Error ? reason.message : "Could not load available times."); })
+      .catch((reason) => { if (!active || (reason instanceof DOMException && reason.name === "AbortError")) return; setSlots([]); setError(reason instanceof Error ? reason.message : "Verfügbare Zeiten konnten nicht geladen werden."); })
       .finally(() => { if (active) setLoadingSlots(false); });
     return () => { active = false; controller.abort(); };
   }, [duration, event, slug, slotFormatters, slotRefreshVersion, timezone]);
@@ -153,12 +153,12 @@ export function PublicBookingFlow({ slug }: { slug: string }) {
   function goToStep(target: Step) {
     if (target !== "schedule" && !scheduleComplete) {
       setStep("schedule");
-      setError("Choose an available time before continuing to details.");
+      setError("Wähle eine verfügbare Zeit, bevor du mit den Details fortfährst.");
       return;
     }
     if (target === "review" && !detailsComplete) {
       setStep("details");
-      setError("Enter a valid name and email and answer every required question before reviewing.");
+      setError("Gib einen gültigen Namen und eine gültige E-Mail-Adresse ein und beantworte jede Pflichtfrage, bevor du zur Prüfung gehst.");
       setFurthestStep((current) => steps.indexOf(current) < steps.indexOf("details") ? "details" : current);
       return;
     }
@@ -186,7 +186,7 @@ export function PublicBookingFlow({ slug }: { slug: string }) {
         verified = await frontendApi.getBookingForManage(result.bookingId);
         await frontendApi.acknowledgeBookingManageSession(result.bookingId);
       } catch (reason) {
-        throw reason instanceof Error ? reason : new Error("Secure booking management could not be verified.");
+        throw reason instanceof Error ? reason : new Error("Die sichere Buchungsverwaltung konnte nicht verifiziert werden.");
       }
       if (result.checkoutUrl) { window.location.assign(result.checkoutUrl); return; }
       if (paid || verified.status === "PENDING_PAYMENT") {
@@ -194,19 +194,19 @@ export function PublicBookingFlow({ slug }: { slug: string }) {
         return;
       }
       if (verified.status !== "CONFIRMED") {
-        setError(`The server returned ${verified.status.toLowerCase().replaceAll("_", " ")} instead of a confirmed booking.`);
+        setError(`Der Server hat ${verified.status.toLowerCase().replaceAll("_", " ")} statt einer bestätigten Buchung zurückgegeben.`);
         return;
       }
       clearTerminalBookingAttempt(slug);
       router.push(`/book/${slug}/confirmation?booking=${encodeURIComponent(result.bookingId)}`);
     } catch (reason) {
-      const message = reason instanceof Error ? reason.message : "That time is no longer available. Please choose another.";
+      const message = reason instanceof Error ? reason.message : "Diese Zeit ist nicht mehr verfügbar. Bitte wähle eine andere.";
       if (/no longer available|just booked|slot.*unavailable/i.test(message)) {
         setSelectedStart("");
         setStep("schedule");
         setFurthestStep("schedule");
         setError("");
-        setAvailabilityNotice("That time was just booked. Availability has been refreshed, so choose another time.");
+        setAvailabilityNotice("Diese Zeit wurde gerade gebucht. Die Verfügbarkeit wurde aktualisiert, wähle also eine andere Zeit.");
         setLoadingSlots(true);
         setSlotRefreshVersion((current) => current + 1);
       } else {
@@ -215,35 +215,35 @@ export function PublicBookingFlow({ slug }: { slug: string }) {
     } finally { setSubmitting(false); }
   }
 
-  if (loadingEvent) return <div className="public-page"><header className="public-header"><BrandMark /></header><main className="outcome-shell" role="status"><span className="spinner" /><p>Loading booking page…</p></main></div>;
-  if (!event || !duration) return <div className="public-page"><header className="public-header"><BrandMark /></header><main className="outcome-shell"><h1>Booking page unavailable</h1><p>{error || "This event has no bookable duration."}</p></main></div>;
+  if (loadingEvent) return <div className="public-page"><header className="public-header"><BrandMark /></header><main className="outcome-shell" role="status"><span className="spinner" /><p>Buchungsseite wird geladen…</p></main></div>;
+  if (!event || !duration) return <div className="public-page"><header className="public-header"><BrandMark /></header><main className="outcome-shell"><h1>Buchungsseite nicht verfügbar</h1><p>{error || "Dieser Termin hat keine buchbare Dauer."}</p></main></div>;
   const branding = event.branding;
 
   return <div className="public-page">
-    <header className="public-header"><div className="public-workspace-brand"><PublicBrandLogo branding={branding} /><strong>{branding?.workspaceName || "SnagTime"}</strong></div><div><Icon name="globe" /><select value={timezone} onChange={(item) => { setLoadingSlots(true); resetScheduleProgress(); setTimezone(item.target.value); }} aria-label="Booking timezone">{timeZones.map((zone) => <option value={zone} key={zone}>{timeZoneLabel(zone)}</option>)}</select></div></header>
+    <header className="public-header"><div className="public-workspace-brand"><PublicBrandLogo branding={branding} /><strong>{branding?.workspaceName || "SnagTime"}</strong></div><div><Icon name="globe" /><select value={timezone} onChange={(item) => { setLoadingSlots(true); resetScheduleProgress(); setTimezone(item.target.value); }} aria-label="Zeitzone für die Buchung">{timeZones.map((zone) => <option value={zone} key={zone}>{timeZoneLabel(zone)}</option>)}</select></div></header>
     <main className="booking-shell">
-      <aside className="booking-info"><span className="host-label">Hosted by {branding?.workspaceName || "the organizer"}</span><h1>{event.title}</h1><p>{event.description}</p>{branding?.description && <p className="workspace-description">{branding.description}</p>}<div className="public-meta"><span><Icon name="clock" />{duration.label}</span><span><Icon name="video" />{event.location}</span><span><Icon name="globe" />{timeZoneLabel(timezone)}</span>{paid && <span><Icon name="sparkles" />${duration.price?.toFixed(2)} {currencyLabel(duration.currency)} · card</span>}</div><div className="booking-safe-note"><Icon name="check" /><span>Your time is confirmed when you finish booking. No account needed.</span></div></aside>
-      <section className="booking-flow" aria-busy={step === "schedule" && loadingSlots} aria-label="Booking steps">
-        <nav className="stepper" aria-label="Booking progress">
-          <button type="button" className={`stepper-step ${stepClass("schedule")}`} aria-current={step === "schedule" ? "step" : undefined} aria-controls="booking-step-panel" aria-label="Time step" onClick={() => goToStep("schedule")}><i>{steps.indexOf(furthestStep) > 0 && step !== "schedule" ? <Icon name="check" size={12} /> : "1"}</i><span>Time</span></button>
+      <aside className="booking-info"><span className="host-label">Veranstaltet von {branding?.workspaceName || "deiner Gastgeber:in"}</span><h1>{event.title}</h1><p>{event.description}</p>{branding?.description && <p className="workspace-description">{branding.description}</p>}<div className="public-meta"><span><Icon name="clock" />{duration.label}</span><span><Icon name="video" />{event.location}</span><span><Icon name="globe" />{timeZoneLabel(timezone)}</span>{paid && <span><Icon name="sparkles" />${duration.price?.toFixed(2)} {currencyLabel(duration.currency)} · Kartenzahlung</span>}</div><div className="booking-safe-note"><Icon name="check" /><span>Deine Zeit ist bestätigt, sobald du die Buchung abschließt. Kein Konto nötig.</span></div></aside>
+      <section className="booking-flow" aria-busy={step === "schedule" && loadingSlots} aria-label="Buchungsschritte">
+        <nav className="stepper" aria-label="Buchungsfortschritt">
+          <button type="button" className={`stepper-step ${stepClass("schedule")}`} aria-current={step === "schedule" ? "step" : undefined} aria-controls="booking-step-panel" aria-label="Schritt Zeit" onClick={() => goToStep("schedule")}><i>{steps.indexOf(furthestStep) > 0 && step !== "schedule" ? <Icon name="check" size={12} /> : "1"}</i><span>Zeit</span></button>
           <b className="stepper-connector" aria-hidden="true" />
-          <button type="button" className={`stepper-step ${stepClass("details")}`} aria-current={step === "details" ? "step" : undefined} aria-controls="booking-step-panel" aria-disabled={!scheduleComplete} aria-label={scheduleComplete ? "Details step" : "Details step. Choose a time before continuing"} onClick={() => goToStep("details")}><i>{steps.indexOf(furthestStep) > 1 && step !== "details" ? <Icon name="check" size={12} /> : "2"}</i><span>Details</span></button>
+          <button type="button" className={`stepper-step ${stepClass("details")}`} aria-current={step === "details" ? "step" : undefined} aria-controls="booking-step-panel" aria-disabled={!scheduleComplete} aria-label={scheduleComplete ? "Schritt Details" : "Schritt Details. Wähle zuerst eine Zeit, bevor du fortfährst"} onClick={() => goToStep("details")}><i>{steps.indexOf(furthestStep) > 1 && step !== "details" ? <Icon name="check" size={12} /> : "2"}</i><span>Details</span></button>
           <b className="stepper-connector" aria-hidden="true" />
-          <button type="button" className={`stepper-step ${stepClass("review")}`} aria-current={step === "review" ? "step" : undefined} aria-controls="booking-step-panel" aria-disabled={!scheduleComplete || !detailsComplete} aria-label={scheduleComplete && detailsComplete ? "Review step" : "Review step. Complete time and details before reviewing"} onClick={() => goToStep("review")}><i>3</i><span>Review</span></button>
+          <button type="button" className={`stepper-step ${stepClass("review")}`} aria-current={step === "review" ? "step" : undefined} aria-controls="booking-step-panel" aria-disabled={!scheduleComplete || !detailsComplete} aria-label={scheduleComplete && detailsComplete ? "Schritt Prüfen" : "Schritt Prüfen. Vervollständige zuerst Zeit und Details"} onClick={() => goToStep("review")}><i>3</i><span>Prüfen</span></button>
         </nav>
         {error && <div className="form-error" role="alert">{error}</div>}
-        {availabilityNotice && <div className="notice notice-warning" role="status"><Icon name="calendar" /><div><strong>Choose another time</strong><span>{availabilityNotice}</span></div></div>}
+        {availabilityNotice && <div className="notice notice-warning" role="status"><Icon name="calendar" /><div><strong>Wähle eine andere Zeit</strong><span>{availabilityNotice}</span></div></div>}
         {step === "schedule" && <div className="flow-panel" id="booking-step-panel">
-          <div className="flow-heading"><h2 ref={stepHeadingRef} tabIndex={-1}>Choose a duration</h2><p>Select the meeting length that works for you.</p></div>
-          <div className="duration-options">{event.durations.map((item) => <button type="button" key={item.id ?? `${item.minutes}-${item.currency ?? "free"}`} className={duration.id === item.id ? "is-selected" : ""} aria-pressed={duration.id === item.id} onClick={() => { setLoadingSlots(true); resetScheduleProgress(); setDuration(item); }}><span><strong>{item.label}</strong>{item.isDefault && <small>Most popular</small>}</span><span>{item.price ? `$${item.price} ${currencyLabel(item.currency)}` : "Free"}</span><i><Icon name="check" size={14} /></i></button>)}</div>
-          <div className="flow-heading calendar-heading"><div><h2>Choose a date and time</h2><p>{timeZoneLabel(timezone)}</p></div><div><button type="button" className="icon-button" aria-label="Previous available dates" disabled={dayOffset === 0} onClick={() => { const next = Math.max(0, dayOffset - 7); setDayOffset(next); setSelectedDate(days[next]?.key ?? ""); resetScheduleProgress(); }}><Icon name="arrow-left" /></button><button type="button" className="icon-button" aria-label="Next available dates" disabled={dayOffset + 7 >= days.length} onClick={() => { const next = Math.min(dayOffset + 7, Math.max(0, days.length - 1)); setDayOffset(next); setSelectedDate(days[next]?.key ?? ""); resetScheduleProgress(); }}><Icon name="arrow-right" /></button></div></div>
-          {loadingSlots ? <div className="sync-note" role="status"><span className="spinner" />Loading available times…</div> : days.length ? <div className="booking-calendar"><div className="calendar-week">{visibleDays.map((day) => <button type="button" className={selectedDate === day.key ? "is-selected" : ""} aria-pressed={selectedDate === day.key} onClick={() => { setSelectedDate(day.key); resetScheduleProgress(); }} key={day.key}><span>{day.weekday}</span><strong>{day.day}</strong><i>{day.month}</i></button>)}</div><div className="time-grid-scroll" role="region" aria-label={`Available times for ${selectedDay?.label ?? "selected date"}`} tabIndex={0}><div className="time-grid">{daySlots.map(({ slot, time }) => <button type="button" className={selectedStart === slot.start ? "is-selected" : ""} aria-pressed={selectedStart === slot.start} onClick={() => { setSelectedStart(slot.start); setFurthestStep("schedule"); setError(""); setAvailabilityNotice(""); }} key={slot.start}>{time}{selectedStart === slot.start && <Icon name="check" size={15} />}</button>)}</div></div></div> : <div className="empty-state"><span className="empty-icon"><Icon name="calendar" /></span><h3>No available times</h3><p>Try another timezone or contact the organizer.</p></div>}
-          <ActionButton variant="primary" className="flow-next" disabled={!scheduleComplete} onClick={() => goToStep("details")}>Continue <Icon name="arrow-right" /></ActionButton>
+          <div className="flow-heading"><h2 ref={stepHeadingRef} tabIndex={-1}>Wähle eine Dauer</h2><p>Wähle die Meeting-Länge, die für dich passt.</p></div>
+          <div className="duration-options">{event.durations.map((item) => <button type="button" key={item.id ?? `${item.minutes}-${item.currency ?? "free"}`} className={duration.id === item.id ? "is-selected" : ""} aria-pressed={duration.id === item.id} onClick={() => { setLoadingSlots(true); resetScheduleProgress(); setDuration(item); }}><span><strong>{item.label}</strong>{item.isDefault && <small>Am beliebtesten</small>}</span><span>{item.price ? `$${item.price} ${currencyLabel(item.currency)}` : "Kostenlos"}</span><i><Icon name="check" size={14} /></i></button>)}</div>
+          <div className="flow-heading calendar-heading"><div><h2>Wähle Datum und Uhrzeit</h2><p>{timeZoneLabel(timezone)}</p></div><div><button type="button" className="icon-button" aria-label="Vorherige verfügbare Termine" disabled={dayOffset === 0} onClick={() => { const next = Math.max(0, dayOffset - 7); setDayOffset(next); setSelectedDate(days[next]?.key ?? ""); resetScheduleProgress(); }}><Icon name="arrow-left" /></button><button type="button" className="icon-button" aria-label="Nächste verfügbare Termine" disabled={dayOffset + 7 >= days.length} onClick={() => { const next = Math.min(dayOffset + 7, Math.max(0, days.length - 1)); setDayOffset(next); setSelectedDate(days[next]?.key ?? ""); resetScheduleProgress(); }}><Icon name="arrow-right" /></button></div></div>
+          {loadingSlots ? <div className="sync-note" role="status"><span className="spinner" />Verfügbare Zeiten werden geladen…</div> : days.length ? <div className="booking-calendar"><div className="calendar-week">{visibleDays.map((day) => <button type="button" className={selectedDate === day.key ? "is-selected" : ""} aria-pressed={selectedDate === day.key} onClick={() => { setSelectedDate(day.key); resetScheduleProgress(); }} key={day.key}><span>{day.weekday}</span><strong>{day.day}</strong><i>{day.month}</i></button>)}</div><div className="time-grid-scroll" role="region" aria-label={`Verfügbare Zeiten für ${selectedDay?.label ?? "das ausgewählte Datum"}`} tabIndex={0}><div className="time-grid">{daySlots.map(({ slot, time }) => <button type="button" className={selectedStart === slot.start ? "is-selected" : ""} aria-pressed={selectedStart === slot.start} onClick={() => { setSelectedStart(slot.start); setFurthestStep("schedule"); setError(""); setAvailabilityNotice(""); }} key={slot.start}>{time}{selectedStart === slot.start && <Icon name="check" size={15} />}</button>)}</div></div></div> : <div className="empty-state"><span className="empty-icon"><Icon name="calendar" /></span><h3>Keine verfügbaren Zeiten</h3><p>Versuche eine andere Zeitzone oder kontaktiere deine Gastgeber:in.</p></div>}
+          <ActionButton variant="primary" className="flow-next" disabled={!scheduleComplete} onClick={() => goToStep("details")}>Weiter <Icon name="arrow-right" /></ActionButton>
         </div>}
-        {step === "details" && <div className="flow-panel" id="booking-step-panel"><button type="button" className="back-link" onClick={() => goToStep("schedule")}><Icon name="arrow-left" />Back to times</button><div className="flow-heading"><h2 ref={stepHeadingRef} tabIndex={-1}>Tell us about yourself</h2><p>Your details are used only to coordinate this meeting.</p></div><div className="details-form"><Field label="Name" required><input value={name} onChange={(item) => setName(item.target.value)} autoComplete="name" minLength={2} maxLength={120} required /></Field><Field label="Email address" required><input value={email} onChange={(item) => setEmail(item.target.value)} autoComplete="email" type="email" required /></Field>{event.questions.map((question) => <Field key={question.id ?? question.label} label={question.label} required={question.required}>{question.kind === "CHECKBOX" ? <input type="checkbox" checked={Boolean(question.id && answers[question.id])} onChange={(item) => question.id && setAnswers((current) => ({ ...current, [question.id!]: item.target.checked }))} required={question.required} /> : question.kind === "SELECT" ? <select value={question.id ? String(answers[question.id] ?? "") : ""} onChange={(item) => question.id && setAnswers((current) => ({ ...current, [question.id!]: item.target.value }))} required={question.required}><option value="">Select an option</option>{question.options.map((option) => <option key={option}>{option}</option>)}</select> : <textarea rows={question.kind === "TEXTAREA" ? 4 : 2} value={question.id ? String(answers[question.id] ?? "") : ""} onChange={(item) => question.id && setAnswers((current) => ({ ...current, [question.id!]: item.target.value }))} required={question.required} />}</Field>)}<Field label="Additional notes"><textarea rows={3} value={notes} onChange={(item) => setNotes(item.target.value)} maxLength={2000} /></Field></div><ActionButton variant="primary" className="flow-next" disabled={!detailsComplete} onClick={() => goToStep("review")}>Review booking <Icon name="arrow-right" /></ActionButton></div>}
-        {step === "review" && <div className="flow-panel" id="booking-step-panel"><button type="button" className="back-link" onClick={() => goToStep("details")}><Icon name="arrow-left" />Edit details</button><div className="flow-heading"><h2 ref={stepHeadingRef} tabIndex={-1}>Review your booking</h2><p>Confirm the details below before booking.</p></div><div className="review-card"><div className="review-event"><span style={{ background: event.color }} /><div><strong>{event.title}</strong><small>{event.location}</small></div></div><dl><div><dt><Icon name="calendar" />Date</dt><dd>{selectedDay?.label}</dd></div><div><dt><Icon name="clock" />Time</dt><dd>{selectedSlotView?.time ?? ""} · {duration.label}</dd></div><div><dt><Icon name="globe" />Timezone</dt><dd>{timeZoneLabel(timezone)}</dd></div><div><dt><Icon name="team" />Invitee</dt><dd>{name}<small>{email}</small></dd></div>{paid && <div><dt><Icon name="sparkles" />Due now</dt><dd>${duration.price?.toFixed(2)} {currencyLabel(duration.currency)}<small>Secure hosted card checkout</small></dd></div>}</dl></div>{paid && <div className="refund-note"><strong>Cancellation and refund policy</strong><p>Cancel or reschedule from your secure manage link. Eligible paid cancellations are queued with the configured payment provider, and processing is not immediate.</p></div>}<ActionButton variant="primary" className="flow-next" disabled={submitting} onClick={confirm}>{submitting ? "Confirming…" : paid ? `Continue to secure payment · $${duration.price} ${currencyLabel(duration.currency)}` : "Confirm booking"}<Icon name="arrow-right" /></ActionButton></div>}
+        {step === "details" && <div className="flow-panel" id="booking-step-panel"><button type="button" className="back-link" onClick={() => goToStep("schedule")}><Icon name="arrow-left" />Zurück zu den Zeiten</button><div className="flow-heading"><h2 ref={stepHeadingRef} tabIndex={-1}>Erzähl uns von dir</h2><p>Deine Angaben werden nur zur Koordination dieses Meetings verwendet.</p></div><div className="details-form"><Field label="Name" required><input value={name} onChange={(item) => setName(item.target.value)} autoComplete="name" minLength={2} maxLength={120} required /></Field><Field label="E-Mail-Adresse" required><input value={email} onChange={(item) => setEmail(item.target.value)} autoComplete="email" type="email" required /></Field>{event.questions.map((question) => <Field key={question.id ?? question.label} label={question.label} required={question.required}>{question.kind === "CHECKBOX" ? <input type="checkbox" checked={Boolean(question.id && answers[question.id])} onChange={(item) => question.id && setAnswers((current) => ({ ...current, [question.id!]: item.target.checked }))} required={question.required} /> : question.kind === "SELECT" ? <select value={question.id ? String(answers[question.id] ?? "") : ""} onChange={(item) => question.id && setAnswers((current) => ({ ...current, [question.id!]: item.target.value }))} required={question.required}><option value="">Wähle eine Option</option>{question.options.map((option) => <option key={option}>{option}</option>)}</select> : <textarea rows={question.kind === "TEXTAREA" ? 4 : 2} value={question.id ? String(answers[question.id] ?? "") : ""} onChange={(item) => question.id && setAnswers((current) => ({ ...current, [question.id!]: item.target.value }))} required={question.required} />}</Field>)}<Field label="Zusätzliche Notizen"><textarea rows={3} value={notes} onChange={(item) => setNotes(item.target.value)} maxLength={2000} /></Field></div><ActionButton variant="primary" className="flow-next" disabled={!detailsComplete} onClick={() => goToStep("review")}>Buchung prüfen <Icon name="arrow-right" /></ActionButton></div>}
+        {step === "review" && <div className="flow-panel" id="booking-step-panel"><button type="button" className="back-link" onClick={() => goToStep("details")}><Icon name="arrow-left" />Details bearbeiten</button><div className="flow-heading"><h2 ref={stepHeadingRef} tabIndex={-1}>Überprüfe deine Buchung</h2><p>Bestätige die folgenden Angaben, bevor du buchst.</p></div><div className="review-card"><div className="review-event"><span style={{ background: event.color }} /><div><strong>{event.title}</strong><small>{event.location}</small></div></div><dl><div><dt><Icon name="calendar" />Datum</dt><dd>{selectedDay?.label}</dd></div><div><dt><Icon name="clock" />Uhrzeit</dt><dd>{selectedSlotView?.time ?? ""} · {duration.label}</dd></div><div><dt><Icon name="globe" />Zeitzone</dt><dd>{timeZoneLabel(timezone)}</dd></div><div><dt><Icon name="team" />Gast</dt><dd>{name}<small>{email}</small></dd></div>{paid && <div><dt><Icon name="sparkles" />Jetzt fällig</dt><dd>${duration.price?.toFixed(2)} {currencyLabel(duration.currency)}<small>Sicherer gehosteter Karten-Checkout</small></dd></div>}</dl></div>{paid && <div className="refund-note"><strong>Stornierungs- und Erstattungsrichtlinie</strong><p>Storniere oder verschiebe über deinen sicheren Verwaltungslink. Berechtigte bezahlte Stornierungen werden beim konfigurierten Zahlungsanbieter vorgemerkt; die Bearbeitung erfolgt nicht sofort.</p></div>}<ActionButton variant="primary" className="flow-next" disabled={submitting} onClick={confirm}>{submitting ? "Wird bestätigt…" : paid ? `Weiter zur sicheren Zahlung · $${duration.price} ${currencyLabel(duration.currency)}` : "Buchung bestätigen"}<Icon name="arrow-right" /></ActionButton></div>}
       </section>
     </main>
-    <footer className="public-footer"><span>{branding?.footerText || "Powered by SnagTime"}</span><span>Secure scheduling</span></footer>
+    <footer className="public-footer"><span>{branding?.footerText || "Bereitgestellt von SnagTime"}</span><span>Sichere Terminplanung</span></footer>
   </div>;
 }

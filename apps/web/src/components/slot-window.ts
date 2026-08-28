@@ -20,7 +20,7 @@ function bookingWindowRanges(bookingWindowDays: number, now = new Date()): SlotR
 }
 
 function aborted(signal?: AbortSignal) {
-  if (signal?.aborted) throw signal.reason instanceof Error ? signal.reason : new DOMException("The slot request was superseded.", "AbortError");
+  if (signal?.aborted) throw signal.reason instanceof Error ? signal.reason : new DOMException("Die Zeitfenster-Anfrage wurde abgelöst.", "AbortError");
 }
 
 async function loadRanges(ranges: SlotRange[], request: SlotRequest, signal?: AbortSignal) {

@@ -69,9 +69,9 @@ export async function login(page: Page, email = organizerEmail, password = organ
     return;
   }
   await page.goto("/dashboard");
-  await page.getByLabel("Email address").fill(email);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel("E-Mail-Adresse").fill(email);
+  await page.getByLabel("Passwort").fill(password);
+  await page.getByRole("button", { name: "Anmelden" }).click();
   await expect(page.locator(".app-shell, .onboarding-page").first()).toBeVisible();
   await expect(page).toHaveURL(/\/(dashboard|onboarding)$/);
 }

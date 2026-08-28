@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "SnagTime",
     short_name: "SnagTime",
-    description: "Snag a time. Get booked.",
+    description: "Schnapp dir einen Termin. Werde gebucht.",
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#F5F8FC",

@@ -12,7 +12,7 @@ export async function POST(request: Request, context: Context) {
     // The untrusted local-demo bucket is intentionally fixed and bounded, but large enough for a room of demo users.
     await enforceRateLimit(`public-booking:${clientAddress(request)}`, 120, 60_000);
     const idempotencyKey = request.headers.get("idempotency-key");
-    if (!idempotencyKey || !/^[A-Za-z0-9._:-]{16,128}$/.test(idempotencyKey)) throw new AppError("INVALID_IDEMPOTENCY_KEY", "A valid Idempotency-Key header is required.", 400);
+    if (!idempotencyKey || !/^[A-Za-z0-9._:-]{16,128}$/.test(idempotencyKey)) throw new AppError("INVALID_IDEMPOTENCY_KEY", "Ein gültiger Idempotency-Key-Header ist erforderlich.", 400);
     const created = await createBooking(slug, bookingInput.parse(await jsonBody(request)), idempotencyKey);
     let session: Awaited<ReturnType<typeof exchangeBookingCapabilities>> | null = null;
     if (created.manageCapabilities) session = await exchangeBookingCapabilities(created.booking.id, created.manageCapabilities);

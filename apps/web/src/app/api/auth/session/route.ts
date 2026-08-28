@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const user = await db.user.findUnique({ where: { email }, include: { memberships: { where: { status: "ACTIVE" }, orderBy: { createdAt: "asc" } } } });
     const membership = user?.memberships.sort((left, right) => loginRoleRank(right.role) - loginRoleRank(left.role))[0];
     const passwordValid = await verifyPassword(password, user?.passwordHash || DUMMY_LOGIN_HASH);
-    if (!user || !membership || !passwordValid || !user.emailVerifiedAt) throw new AppError("AUTHENTICATION_FAILED", "Email or password is invalid.", 401);
+    if (!user || !membership || !passwordValid || !user.emailVerifiedAt) throw new AppError("AUTHENTICATION_FAILED", "E-Mail-Adresse oder Passwort ist ungültig.", 401);
     enterAuthDatabaseContext(email, user.id, membership.workspaceId);
     const response = ok({ user: mapUser(user) });
     response.cookies.set(SESSION_COOKIE, await createSessionForUser(user.id, membership.id), sessionCookieOptions);

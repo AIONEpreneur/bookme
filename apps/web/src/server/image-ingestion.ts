@@ -67,24 +67,24 @@ function isBase64Code(code: number) {
 }
 
 function decodeStrictDataUrl(value: string, fieldName: string) {
-  if (value.length > IMAGE_DATA_URL_MAX_CHARS) throw invalidImage("Image source must be 5 MB or smaller.", fieldName, 413);
+  if (value.length > IMAGE_DATA_URL_MAX_CHARS) throw invalidImage("Die Bilddatei darf höchstens 5 MB groß sein.", fieldName, 413);
   const mime = (Object.keys(DATA_URL_PREFIX_BY_MIME) as SupportedMime[]).find((candidate) => value.startsWith(DATA_URL_PREFIX_BY_MIME[candidate]));
-  if (!mime) throw invalidImage("Upload a valid PNG, JPEG, or WebP data URL.", fieldName);
+  if (!mime) throw invalidImage("Lade eine gültige PNG-, JPEG- oder WebP-Data-URL hoch.", fieldName);
   const payload = value.slice(DATA_URL_PREFIX_BY_MIME[mime].length);
-  if (payload.length === 0 || payload.length % 4 !== 0) throw invalidImage("Image base64 encoding is malformed.", fieldName);
+  if (payload.length === 0 || payload.length % 4 !== 0) throw invalidImage("Die Base64-Kodierung des Bildes ist fehlerhaft.", fieldName);
   const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
   for (let index = 0; index < payload.length - padding; index += 1) {
-    if (!isBase64Code(payload.charCodeAt(index))) throw invalidImage("Image base64 encoding is malformed.", fieldName);
+    if (!isBase64Code(payload.charCodeAt(index))) throw invalidImage("Die Base64-Kodierung des Bildes ist fehlerhaft.", fieldName);
   }
   for (let index = payload.length - padding; index < payload.length; index += 1) {
-    if (payload.charCodeAt(index) !== 0x3d) throw invalidImage("Image base64 encoding is malformed.", fieldName);
+    if (payload.charCodeAt(index) !== 0x3d) throw invalidImage("Die Base64-Kodierung des Bildes ist fehlerhaft.", fieldName);
   }
   const decodedLength = (payload.length / 4) * 3 - padding;
-  if (decodedLength > IMAGE_SOURCE_MAX_BYTES) throw invalidImage("Image source must be 5 MB or smaller.", fieldName, 413);
-  if (decodedLength === 0) throw invalidImage("Image source must be 5 MB or smaller.", fieldName);
+  if (decodedLength > IMAGE_SOURCE_MAX_BYTES) throw invalidImage("Die Bilddatei darf höchstens 5 MB groß sein.", fieldName, 413);
+  if (decodedLength === 0) throw invalidImage("Die Bilddatei darf höchstens 5 MB groß sein.", fieldName);
   const bytes = Buffer.from(payload, "base64");
-  if (bytes.length !== decodedLength || bytes.toString("base64") !== payload) throw invalidImage("Image base64 encoding is malformed.", fieldName);
-  if (!containerMatches(mime, bytes)) throw invalidImage("Image container is malformed or contains trailing data.", fieldName);
+  if (bytes.length !== decodedLength || bytes.toString("base64") !== payload) throw invalidImage("Die Base64-Kodierung des Bildes ist fehlerhaft.", fieldName);
+  if (!containerMatches(mime, bytes)) throw invalidImage("Der Bildcontainer ist fehlerhaft oder enthält angehängte Daten.", fieldName);
   return { mime, bytes };
 }
 
@@ -94,17 +94,17 @@ export function isRemoteImageUrl(value: string) {
 }
 
 export async function canonicalizeImageDataUrl(value: string, fieldName = "imageUrl") {
-  if (!value.startsWith("data:")) throw invalidImage("Remote image URLs cannot be saved. Upload the image file instead.", fieldName);
+  if (!value.startsWith("data:")) throw invalidImage("Externe Bild-URLs können nicht gespeichert werden. Lade stattdessen die Bilddatei hoch.", fieldName);
   const { mime, bytes } = decodeStrictDataUrl(value, fieldName);
   let metadata: Awaited<ReturnType<ReturnType<typeof sharp>["metadata"]>>;
   try {
     metadata = await sharp(bytes, { failOn: "error", limitInputPixels: IMAGE_MAX_PIXELS, sequentialRead: true }).metadata();
   } catch {
-    throw invalidImage("Image could not be decoded safely.", fieldName);
+    throw invalidImage("Das Bild konnte nicht sicher dekodiert werden.", fieldName);
   }
-  if (metadata.format !== formatByMime[mime]) throw invalidImage("Declared image type does not match the decoded image.", fieldName);
-  if (!metadata.width || !metadata.height || metadata.width > IMAGE_MAX_DIMENSION || metadata.height > IMAGE_MAX_DIMENSION || metadata.width * metadata.height > IMAGE_MAX_PIXELS) throw invalidImage("Image dimensions are too large.", fieldName);
-  if ((metadata.pages ?? 1) !== 1) throw invalidImage("Animated or multi-page images are not supported.", fieldName);
+  if (metadata.format !== formatByMime[mime]) throw invalidImage("Der angegebene Bildtyp passt nicht zum dekodierten Bild.", fieldName);
+  if (!metadata.width || !metadata.height || metadata.width > IMAGE_MAX_DIMENSION || metadata.height > IMAGE_MAX_DIMENSION || metadata.width * metadata.height > IMAGE_MAX_PIXELS) throw invalidImage("Die Bildabmessungen sind zu groß.", fieldName);
+  if ((metadata.pages ?? 1) !== 1) throw invalidImage("Animierte oder mehrseitige Bilder werden nicht unterstützt.", fieldName);
 
   for (const quality of [82, 70, 56]) {
     try {
@@ -115,8 +115,8 @@ export async function canonicalizeImageDataUrl(value: string, fieldName = "image
         .toBuffer();
       if (output.length <= IMAGE_OUTPUT_MAX_BYTES) return `data:image/webp;base64,${output.toString("base64")}`;
     } catch {
-      throw invalidImage("Image could not be decoded safely.", fieldName);
+      throw invalidImage("Das Bild konnte nicht sicher dekodiert werden.", fieldName);
     }
   }
-  throw invalidImage("Image could not be reduced to the safe storage limit.", fieldName, 413);
+  throw invalidImage("Das Bild konnte nicht auf das sichere Speicherlimit verkleinert werden.", fieldName, 413);
 }

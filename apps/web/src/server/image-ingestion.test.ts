@@ -16,9 +16,9 @@ describe("server image ingestion", () => {
     const png = await sharp(pixels).png().toBuffer();
     await expect(canonicalizeImageDataUrl(dataUrl("image/jpeg", png))).rejects.toMatchObject({ code: "INVALID_IMAGE" });
     await expect(canonicalizeImageDataUrl("data:image/png;base64,AAAAA")).rejects.toMatchObject({ code: "INVALID_IMAGE" });
-    await expect(canonicalizeImageDataUrl("https://images.example/profile.png")).rejects.toMatchObject({ code: "INVALID_IMAGE", fieldErrors: { imageUrl: [expect.stringMatching(/Remote image URLs/)] } });
+    await expect(canonicalizeImageDataUrl("https://images.example/profile.png")).rejects.toMatchObject({ code: "INVALID_IMAGE", fieldErrors: { imageUrl: [expect.stringMatching(/Externe Bild-URLs/)] } });
     const bombDimension = await sharp({ create: { width: IMAGE_MAX_DIMENSION + 1, height: 1, channels: 3, background: "red" } }).png().toBuffer();
-    await expect(canonicalizeImageDataUrl(dataUrl("image/png", bombDimension))).rejects.toMatchObject({ code: "INVALID_IMAGE", fieldErrors: { imageUrl: [expect.stringMatching(/dimensions/)] } });
+    await expect(canonicalizeImageDataUrl(dataUrl("image/png", bombDimension))).rejects.toMatchObject({ code: "INVALID_IMAGE", fieldErrors: { imageUrl: [expect.stringMatching(/Bildabmessungen/)] } });
   });
 
   it("rejects source bytes beyond the upload cap before decoding", async () => {

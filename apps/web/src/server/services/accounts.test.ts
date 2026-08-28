@@ -114,7 +114,7 @@ describe("production workspace accounts", () => {
     await expect(refreshed.json()).resolves.toMatchObject({ data: { user: { id: created.user.id, imageUrl: canonical } } });
 
     const rejected = await profileImageRoute(profileImageRequest(created.token, "https://attacker.example/avatar.png"));
-    expect(rejected.status).toBe(422); await expect(rejected.json()).resolves.toMatchObject({ error: { code: "INVALID_IMAGE", fieldErrors: { imageUrl: [expect.stringMatching(/Remote image URLs/)] } } });
+    expect(rejected.status).toBe(422); await expect(rejected.json()).resolves.toMatchObject({ error: { code: "INVALID_IMAGE", fieldErrors: { imageUrl: [expect.stringMatching(/Externe Bild-URLs/)] } } });
     await expect(db.user.findUniqueOrThrow({ where: { id: created.user.id } })).resolves.toMatchObject({ imageUrl: canonical });
 
     const cleared = await profileImageRoute(profileImageRequest(created.token, null));
@@ -156,8 +156,8 @@ describe("production workspace accounts", () => {
     const created = await account("login-enumeration", false);
     const call = (email: string) => loginRoute(new Request("http://localhost:3000/api/auth/session", { method: "POST", headers: { origin: "http://localhost:3000", "content-type": "application/json" }, body: JSON.stringify({ email, password: "Definitely!Wrong9" }) }));
     const known = await call(created.user.email); const unknown = await call(`absent-${crypto.randomUUID()}@example.com`);
-    expect({ status: known.status, body: await known.json() }).toEqual({ status: 401, body: { error: { code: "AUTHENTICATION_FAILED", message: "Email or password is invalid." } } });
-    expect({ status: unknown.status, body: await unknown.json() }).toEqual({ status: 401, body: { error: { code: "AUTHENTICATION_FAILED", message: "Email or password is invalid." } } });
+    expect({ status: known.status, body: await known.json() }).toEqual({ status: 401, body: { error: { code: "AUTHENTICATION_FAILED", message: "E-Mail-Adresse oder Passwort ist ungültig." } } });
+    expect({ status: unknown.status, body: await unknown.json() }).toEqual({ status: 401, body: { error: { code: "AUTHENTICATION_FAILED", message: "E-Mail-Adresse oder Passwort ist ungültig." } } });
   });
 
   it("changes the password with a predecessor CAS, revokes every old session, and rotates fixation state", async () => {

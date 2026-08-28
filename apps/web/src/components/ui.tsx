@@ -22,7 +22,7 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
 
 export function Avatar({ name, imageUrl = null, size = "md" }: { name: string; imageUrl?: string | null; size?: "sm" | "md" | "lg" }) {
   const initials = name.split(" ").map((part) => part[0]).slice(0, 2).join("");
-  return imageUrl ? <span className={`avatar avatar-${size}`}><img src={imageUrl} alt={`${name} profile`} /></span> : <span className={`avatar avatar-${size}`} aria-label={name}>{initials}</span>;
+  return imageUrl ? <span className={`avatar avatar-${size}`}><img src={imageUrl} alt={`${name} Profilfoto`} /></span> : <span className={`avatar avatar-${size}`} aria-label={name}>{initials}</span>;
 }
 
 export function Badge({ children, tone = "neutral", dot = false }: { children: ReactNode; tone?: "neutral" | "success" | "warning" | "danger" | "brand" | "info"; dot?: boolean }) {

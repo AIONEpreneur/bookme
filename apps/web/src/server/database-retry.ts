@@ -3,7 +3,7 @@ import { AppError } from "@/server/errors";
 
 const RETRY_DEADLINE_MS = 20_000;
 const MAX_RETRY_DELAY_MS = 250;
-function databaseBusy() { return new AppError("DATABASE_TRANSACTION_RETRY", "The booking database is busy. Retry the same request.", 503); }
+function databaseBusy() { return new AppError("DATABASE_TRANSACTION_RETRY", "Die Buchungsdatenbank ist gerade ausgelastet. Wiederhole dieselbe Anfrage.", 503); }
 
 function errorText(error: unknown) {
   if (!error || typeof error !== "object") return "";

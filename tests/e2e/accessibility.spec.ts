@@ -30,30 +30,30 @@ test("@axe profile photo upload, reload, removal and fail-closed error", async (
   const profilePng = { name: "synthetic-profile.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mNkYPj/n4GBgYGJAQoAHgQCAf5Z5WQAAAAASUVORK5CYII=", "base64") };
   await login(page);
   await page.goto("/settings");
-  await expect(page.getByRole("heading", { name: "Profile photo" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Profilfoto" })).toBeVisible();
 
-  const existingRemove = page.getByRole("button", { name: "Remove" }).first();
-  if (await existingRemove.isVisible().catch(() => false)) { await existingRemove.click(); await expect(page.getByRole("status")).toContainText("Profile photo removed"); }
+  const existingRemove = page.getByRole("button", { name: "Entfernen" }).first();
+  if (await existingRemove.isVisible().catch(() => false)) { await existingRemove.click(); await expect(page.getByRole("status")).toContainText("Profilfoto entfernt"); }
 
-  const choose = page.getByRole("button", { name: "Choose photo" });
+  const choose = page.getByRole("button", { name: "Foto auswählen" });
   await choose.focus(); await expect(choose).toBeFocused();
   await page.locator("#profile-photo-upload").evaluate((input) => input.addEventListener("click", () => { input.dataset.keyboardActivated = "true"; }, { once: true }));
   await page.keyboard.press("Enter");
   await expect(page.locator("#profile-photo-upload")).toHaveAttribute("data-keyboard-activated", "true");
   await page.locator("#profile-photo-upload").setInputFiles(profilePng);
-  await expect(page.getByRole("status")).toContainText("Profile photo updated");
-  await expect(page.locator(".profile-photo .avatar img")).toHaveAttribute("alt", /profile$/);
+  await expect(page.getByRole("status")).toContainText("Profilfoto aktualisiert");
+  await expect(page.locator(".profile-photo .avatar img")).toHaveAttribute("alt", /Profilfoto$/);
   await expect(page.locator(".topbar .avatar img")).toHaveCount(1);
   expect(await page.evaluate(() => JSON.stringify({ ...sessionStorage }))).not.toContain("data:image");
 
   await page.reload();
   await expect(page.locator(".profile-photo .avatar img")).toBeVisible();
-  await page.getByRole("button", { name: "Remove" }).first().click();
-  await expect(page.getByRole("status")).toContainText("Profile photo removed");
+  await page.getByRole("button", { name: "Entfernen" }).first().click();
+  await expect(page.getByRole("status")).toContainText("Profilfoto entfernt");
   await expect(page.locator(".profile-photo .avatar img")).toHaveCount(0);
 
   await page.locator("#profile-photo-upload").setInputFiles({ name: "not-an-image.txt", mimeType: "text/plain", buffer: Buffer.from("not an image") });
-  await expect(page.locator(".toast-error")).toContainText("Choose a PNG, JPG, or WebP");
+  await expect(page.locator(".toast-error")).toContainText("PNG, JPG oder WebP");
 
   await page.route("**/api/account/profile-image", async (route) => {
     await route.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ error: { code: "INVALID_PROFILE_IMAGE", message: "The selected image was rejected." } }) });
@@ -70,23 +70,23 @@ test("@axe scans onboarding, authority outcomes, local inbox, confirmation and m
   const suffix = `axe-${testInfo.project.name.replaceAll(/[^a-z0-9]/gi, "-").toLowerCase()}`; const email = `${suffix}@example.com`; const password = process.env.PLAYWRIGHT_ACCOUNT_PASSWORD!;
   await untracedJson("/api/auth/register", { method: "POST", body: JSON.stringify({ name: "Accessible Account", email, password, workspaceName: `Accessible ${suffix}`, timeZone: "America/Chicago" }) });
   const verification = await latestAccountToken(email, "EMAIL_VERIFY");
-  await page.goto(`/verify-email#token=${encodeURIComponent(verification)}`); await expect(page).toHaveURL(`${baseURL}/verify-email`); await expect(page.getByRole("heading", { name: "Your email is verified" })).toBeVisible(); await scan(page, "verified-outcome");
+  await page.goto(`/verify-email#token=${encodeURIComponent(verification)}`); await expect(page).toHaveURL(`${baseURL}/verify-email`); await expect(page.getByRole("heading", { name: "Deine E-Mail ist bestätigt" })).toBeVisible(); await scan(page, "verified-outcome");
   await login(page, email, password); await expect(page).toHaveURL(/\/onboarding$/); await scan(page, "onboarding");
-  await page.getByRole("button", { name: "Open dashboard" }).click(); await expect(page.getByRole("heading", { name: "Scheduling overview" })).toBeVisible();
-  await page.goto("/forgot-password"); await page.getByLabel("Email address").fill(email); await page.getByRole("button", { name: "Request reset instructions" }).click(); await expect(page.getByRole("status")).toContainText("Request accepted"); const reset = await latestAccountToken(email, "PASSWORD_RESET");
-  await page.goto(`/reset-password#token=${encodeURIComponent(reset)}`); await expect(page).toHaveURL(`${baseURL}/reset-password`); await expect(page.getByRole("heading", { name: "Choose a new password" })).toBeVisible(); await scan(page, "reset-token-form");
+  await page.getByRole("button", { name: "Dashboard öffnen" }).click(); await expect(page.getByRole("heading", { name: "Planungsübersicht" })).toBeVisible();
+  await page.goto("/forgot-password"); await page.getByLabel("E-Mail-Adresse").fill(email); await page.getByRole("button", { name: "Anweisungen zum Zurücksetzen anfordern" }).click(); await expect(page.getByRole("status")).toContainText("Anfrage angenommen"); const reset = await latestAccountToken(email, "PASSWORD_RESET");
+  await page.goto(`/reset-password#token=${encodeURIComponent(reset)}`); await expect(page).toHaveURL(`${baseURL}/reset-password`); await expect(page.getByRole("heading", { name: "Wähle ein neues Passwort" })).toBeVisible(); await scan(page, "reset-token-form");
 
   await context.clearCookies(); await login(page, organizerEmail, organizerPassword);
   const managed = await createManagedBooking(context, `${suffix}-manage`);
-  await page.goto(`/book/strategy-call/confirmation?booking=${encodeURIComponent(managed.id)}`); await expect(page.getByRole("heading", { name: /You’re booked/ })).toBeVisible(); await scan(page, "booking-confirmation");
-  await page.goto(`/manage/${managed.id}/reschedule?slug=strategy-call`); await expect(page.getByRole("heading", { name: "Choose a new time" })).toBeVisible({ timeout: 60_000 }); await scan(page, "manage-reschedule");
-  await page.goto(`/manage/${managed.id}/cancel?slug=strategy-call`); await expect(page.getByRole("heading", { name: /Cancel/ })).toBeVisible(); await scan(page, "manage-cancel");
+  await page.goto(`/book/strategy-call/confirmation?booking=${encodeURIComponent(managed.id)}`); await expect(page.getByRole("heading", { name: /Du bist gebucht/ })).toBeVisible(); await scan(page, "booking-confirmation");
+  await page.goto(`/manage/${managed.id}/reschedule?slug=strategy-call`); await expect(page.getByRole("heading", { name: "Wähle eine neue Zeit" })).toBeVisible({ timeout: 60_000 }); await scan(page, "manage-reschedule");
+  await page.goto(`/manage/${managed.id}/cancel?slug=strategy-call`); await expect(page.getByRole("heading", { name: /stornieren/i })).toBeVisible(); await scan(page, "manage-cancel");
 
-  await page.goto("/settings"); await page.getByLabel("Invitee email").fill(email); await page.getByLabel("Workspace role").selectOption("MEMBER"); await page.getByRole("button", { name: "Send invitation" }).click();
+  await page.goto("/settings"); await page.getByLabel("E-Mail der eingeladenen Person").fill(email); await page.getByLabel("Workspace-Rolle").selectOption("MEMBER"); await page.getByRole("button", { name: "Einladung senden" }).click();
   const invitation = await latestInvitationToken(email); await context.clearCookies(); await attachSession(context, email, password);
-  await page.goto(`/invite/accept#token=${encodeURIComponent(invitation)}`); await expect(page).toHaveURL(`${baseURL}/invite/accept`); await expect(page.getByRole("heading", { name: "You’re in" })).toBeVisible(); await scan(page, "invitation-accepted");
+  await page.goto(`/invite/accept#token=${encodeURIComponent(invitation)}`); await expect(page).toHaveURL(`${baseURL}/invite/accept`); await expect(page.getByRole("heading", { name: "Du bist dabei" })).toBeVisible(); await scan(page, "invitation-accepted");
 
-  await context.clearCookies(); await login(page, organizerEmail, organizerPassword); await page.request.post("/api/integrations/email/inbox"); await page.goto("/integrations"); await expect(page.getByRole("heading", { name: "Demo inbox" })).toBeVisible(); await scan(page, "local-inbox");
+  await context.clearCookies(); await login(page, organizerEmail, organizerPassword); await page.request.post("/api/integrations/email/inbox"); await page.goto("/integrations"); await expect(page.getByRole("heading", { name: "Demo-Posteingang" })).toBeVisible(); await scan(page, "local-inbox");
   await assertNoClientSecretState(context, page);
 });
 
@@ -94,18 +94,18 @@ test("@axe keyboard focus, modal trap, Escape return and mobile navigation", asy
   await login(page);
   await page.goto("/dashboard");
   await expect(page.locator(".app-shell")).toBeVisible();
-  const skip = page.getByRole("link", { name: "Skip to content" });
+  const skip = page.getByRole("link", { name: "Zum Inhalt springen" });
   await skip.focus();
   await expect(skip).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.locator("#main-content")).toBeFocused();
 
   if ((page.viewportSize()?.width ?? 999) < 600) {
-    const menu = page.getByRole("button", { name: "Open navigation" });
+    const menu = page.getByRole("button", { name: "Navigation öffnen" });
     await menu.focus(); await page.keyboard.press("Enter");
-    const navigation = page.getByRole("dialog", { name: "Primary navigation" });
+    const navigation = page.getByRole("dialog", { name: "Hauptnavigation" });
     await expect(navigation).toBeVisible();
-    await expect(page.getByRole("button", { name: "Close navigation" }).first()).toBeFocused();
+    await expect(page.getByRole("button", { name: "Navigation schließen" }).first()).toBeFocused();
     await page.keyboard.press("Escape"); await expect(navigation).toBeHidden(); await expect(menu).toBeFocused();
   }
 
@@ -115,8 +115,8 @@ test("@axe keyboard focus, modal trap, Escape return and mobile navigation", asy
   const row = page.locator(".booking-table-row").filter({ has: page.getByText(`Invitee ${bookingLabel}`, { exact: true }) });
   await expect(row).toHaveCount(1);
   await row.focus(); await page.keyboard.press("Enter");
-  const dialog = page.getByRole("dialog", { name: /Strategy Call/i });
-  await expect(dialog).toBeVisible(); await expect(page.getByRole("button", { name: "Close booking details" }).last()).toBeFocused();
+  const dialog = page.getByRole("dialog", { name: /Strategiegespräch/i });
+  await expect(dialog).toBeVisible(); await expect(page.getByRole("button", { name: "Buchungsdetails schließen" }).last()).toBeFocused();
   await page.keyboard.press("Escape"); await expect(dialog).toBeHidden(); await expect(row).toBeFocused();
   await assertNoClientSecretState(context, page);
 });

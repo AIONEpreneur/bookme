@@ -5,7 +5,7 @@ import type { AvailabilityOverride, AvailabilitySchedule, BookingSlot, BookingSu
 import type { AvailabilityDay, Booking, EventType } from "./demo-data";
 
 export function mapEventType(item: EventTypeSummary): EventType {
-  const location = item.locationType === "GOOGLE_MEET" ? "Google Meet" : item.locationType === "PHONE" ? item.locationValue || "Phone call" : item.locationType === "IN_PERSON" ? item.locationValue || "In person" : item.locationValue ?? "Custom location";
+  const location = item.locationType === "GOOGLE_MEET" ? "Google Meet" : item.locationType === "PHONE" ? item.locationValue || "Telefonanruf" : item.locationType === "IN_PERSON" ? item.locationValue || "Vor Ort" : item.locationValue ?? "Individueller Ort";
   return {
     id: item.id,
     title: item.name,
@@ -54,21 +54,17 @@ export function toEventInput(event: EventType): CreateEventTypeInput {
 function minutesToTime(minutes: number) {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  const suffix = hours >= 12 ? "PM" : "AM";
-  const display = hours % 12 || 12;
-  return `${display}:${mins.toString().padStart(2, "0")} ${suffix}`;
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
 }
 
 function timeToMinutes(value: string) {
-  const match = value.match(/(\d+):(\d+)\s(AM|PM)/);
+  const match = value.match(/^(\d{1,2}):(\d{2})$/);
   if (!match) return 540;
-  let hour = Number(match[1]) % 12;
-  if (match[3] === "PM") hour += 12;
-  return hour * 60 + Number(match[2]);
+  return Number(match[1]) * 60 + Number(match[2]);
 }
 
 export function mapAvailability(schedule: AvailabilitySchedule): AvailabilityDay[] {
-  const names: ReadonlyArray<readonly [string, string]> = [["Sunday", "Sun"], ["Monday", "Mon"], ["Tuesday", "Tue"], ["Wednesday", "Wed"], ["Thursday", "Thu"], ["Friday", "Fri"], ["Saturday", "Sat"]];
+  const names: ReadonlyArray<readonly [string, string]> = [["Sonntag", "So"], ["Montag", "Mo"], ["Dienstag", "Di"], ["Mittwoch", "Mi"], ["Donnerstag", "Do"], ["Freitag", "Fr"], ["Samstag", "Sa"]];
   return names.slice(1).concat(names.slice(0, 1)).map(([day, short], index) => {
     const apiDay = index === 6 ? 0 : index + 1;
     const windows = schedule.intervals.filter((interval) => interval.dayOfWeek === apiDay).map((interval) => ({ id: interval.id ?? `${apiDay}-${interval.startMinute}`, start: minutesToTime(interval.startMinute), end: minutesToTime(interval.endMinute) }));
@@ -84,10 +80,10 @@ export function mapBooking(item: BookingSummary, organizerTimeZone = item.invite
   const start = new Date(item.startAt);
   const end = new Date(item.endAt);
   const location = item.locationType === "GOOGLE_MEET"
-    ? item.calendarProvider === "google" && item.calendarSyncStatus === "SYNCED" ? "Google Meet" : "Online meeting details unavailable"
-    : item.locationType === "PHONE" ? item.locationValue || "Phone call"
-      : item.locationType === "IN_PERSON" ? item.locationValue || "In person"
-        : item.locationValue || "Custom location";
+    ? item.calendarProvider === "google" && item.calendarSyncStatus === "SYNCED" ? "Google Meet" : "Details zum Online-Meeting nicht verfügbar"
+    : item.locationType === "PHONE" ? item.locationValue || "Telefonanruf"
+      : item.locationType === "IN_PERSON" ? item.locationValue || "Vor Ort"
+        : item.locationValue || "Individueller Ort";
   return {
     id: item.id,
     eventTypeId: item.eventTypeId,
@@ -95,8 +91,8 @@ export function mapBooking(item: BookingSummary, organizerTimeZone = item.invite
     email: item.inviteeEmail,
     eventTitle: item.eventTitleSnapshot,
     startsAt: item.startAt,
-    dateLabel: start.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: organizerTimeZone }),
-    timeLabel: `${start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: organizerTimeZone })} – ${end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: organizerTimeZone })}`,
+    dateLabel: start.toLocaleDateString("de-DE", { month: "short", day: "numeric", timeZone: organizerTimeZone }),
+    timeLabel: `${start.toLocaleTimeString("de-DE", { hour: "numeric", minute: "2-digit", timeZone: organizerTimeZone })} – ${end.toLocaleTimeString("de-DE", { hour: "numeric", minute: "2-digit", timeZone: organizerTimeZone })}`,
     duration: Math.round((end.getTime() - start.getTime()) / 60000),
     timezone: item.inviteeTimeZone,
     organizerTimeZone,

@@ -6,6 +6,20 @@ Diese Anleitung bringt BookMe im **Vorführ-Modus** auf deine eigene Domain (z. 
 
 **Was er bewusst nicht ist:** Kein echter E-Mail-Versand, keine Google-Kalender-Synchronisation, keine echten Zahlungen und nicht die gehärtete PostgreSQL-Produktionsarchitektur (siehe [DEPLOYMENT.md](../docs/DEPLOYMENT.md), wenn du später „richtig" live gehen willst).
 
+## Sicherheit für bestehende Apps auf dem Server
+
+Das Setup-Skript ist so gebaut, dass es andere Anwendungen auf dem VPS nicht stört:
+
+- **Vorab-Prüfung vor jeder Änderung:** Läuft auf Port 80/443 bereits ein anderer Webserver (z. B. nginx für bestehende Apps) oder ist eine ältere Node-Version installiert, bricht das Skript mit einer klaren Meldung ab, **bevor** es irgendetwas verändert.
+- **Eigener Bereich:** BookMe lebt komplett in `/opt/bookme`, als eigener Dienst `bookme.service`, auf einem automatisch gewählten freien Port (3005–3012).
+- **Nichts wird überschrieben:** Eine bestehende Caddy-Konfiguration wird nur um einen eigenen Eintrag ergänzt (mit vorheriger Sicherungskopie), niemals ersetzt. Node wird nur installiert, wenn gar keins vorhanden ist.
+
+Wer vorher sehen möchte, was auf dem Server läuft, kann diesen rein lesenden Befehl ausführen und die Ausgabe prüfen (er verändert nichts):
+
+```bash
+echo "— Ports 80/443/3000-3012 —"; ss -tlnp 2>/dev/null | grep -E ':(80|443|30[0-1][0-9]) ' || echo "nichts gefunden"; echo "— Node —"; node -v 2>/dev/null || echo "kein Node"; echo "— Docker-Container —"; docker ps --format '{{.Names}} -> {{.Ports}}' 2>/dev/null || echo "kein Docker"; echo "— Aktive Webserver —"; for s in nginx apache2 caddy traefik; do systemctl is-active --quiet $s 2>/dev/null && echo "$s läuft"; done; echo "fertig"
+```
+
 ## Voraussetzungen
 
 - Ein Hostinger-VPS mit Ubuntu oder Debian (empfohlen: mindestens 2 GB RAM, z. B. KVM 2)

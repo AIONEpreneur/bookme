@@ -93,13 +93,13 @@ export function capabilityRows(bookingId: string, version: string, expiresAt: Da
 
 export async function requireBookingCapability(bookingId: string, scope: BookingCapabilityScope, token: string) {
   enterCapabilityDatabaseContext(bookingId);
-  if (!token || token.length > 600) throw notFound("Booking");
+  if (!token || token.length > 600) throw notFound("Buchung");
   const suppliedHash = hash(token);
   const record = await db.bookingCapability.findUnique({ where: { tokenHash: suppliedHash } });
-  if (!record || record.bookingId !== bookingId || record.scope !== scope || record.revokedAt || record.expiresAt <= new Date()) throw notFound("Booking");
+  if (!record || record.bookingId !== bookingId || record.scope !== scope || record.revokedAt || record.expiresAt <= new Date()) throw notFound("Buchung");
   const supplied = Buffer.from(suppliedHash);
   const expected = Buffer.from(record.tokenHash);
-  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) throw notFound("Booking");
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) throw notFound("Buchung");
   return record;
 }
 
@@ -111,11 +111,11 @@ export async function exchangeBookingCapabilities(bookingId: string, supplied: P
   let expiresAt = now;
   await db.$transaction(async (tx) => {
     const records = await tx.bookingCapability.findMany({ where: { bookingId, expiresAt: { gt: now }, tokenHash: { in: suppliedRows.map((item) => item.tokenHash) } } });
-    if (records.length !== scopes.length || suppliedRows.some((item) => !records.some((record) => record.scope === item.scope && record.tokenHash === item.tokenHash))) throw notFound("Booking");
+    if (records.length !== scopes.length || suppliedRows.some((item) => !records.some((record) => record.scope === item.scope && record.tokenHash === item.tokenHash))) throw notFound("Buchung");
     const boundedExpiry = new Date(Math.min(...records.map((record) => record.expiresAt.getTime()))); expiresAt = boundedExpiry;
     const existing = await tx.bookingManageSession.findUnique({ where: { tokenHash: sessionTokenHash } });
     const activeCount = records.filter((record) => record.revokedAt === null).length;
-    if (activeCount !== scopes.length || existing?.acknowledgedAt || existing?.revokedAt || existing && existing.bookingId !== bookingId) throw notFound("Booking");
+    if (activeCount !== scopes.length || existing?.acknowledgedAt || existing?.revokedAt || existing && existing.bookingId !== bookingId) throw notFound("Buchung");
     if (!existing) await tx.bookingManageSession.create({ data: { bookingId, tokenHash: sessionTokenHash, scopes: scopes.join(","), expiresAt: boundedExpiry, createdAt: now } });
   });
   return { token: sessionToken, expiresAt };
@@ -130,24 +130,24 @@ function cookieValue(request: Request, bookingId: string) {
 export async function requireBookingManageSession(request: Request, bookingId: string, scope: BookingCapabilityScope) {
   enterCapabilityDatabaseContext(bookingId);
   const token = cookieValue(request, bookingId);
-  if (!token) throw notFound("Booking");
+  if (!token) throw notFound("Buchung");
   const record = await db.bookingManageSession.findFirst({ where: { bookingId, tokenHash: hash(token), acknowledgedAt: scope === "read" ? undefined : { not: null }, revokedAt: null, expiresAt: { gt: new Date() } } });
-  if (!record || !record.scopes.split(",").includes(scope)) throw notFound("Booking");
+  if (!record || !record.scopes.split(",").includes(scope)) throw notFound("Buchung");
   return record;
 }
 
 export async function acknowledgeBookingManageSession(request: Request, bookingId: string, now = new Date()) {
   enterCapabilityDatabaseContext(bookingId);
-  const token = cookieValue(request, bookingId); if (!token) throw notFound("Booking"); const tokenHash = hash(token);
+  const token = cookieValue(request, bookingId); if (!token) throw notFound("Buchung"); const tokenHash = hash(token);
   await db.$transaction(async (tx) => {
     const session = await tx.bookingManageSession.findFirst({ where: { bookingId, tokenHash, revokedAt: null, expiresAt: { gt: now } } });
-    if (!session) throw notFound("Booking");
+    if (!session) throw notFound("Buchung");
     if (session.acknowledgedAt) return;
     const active = await tx.bookingCapability.findMany({ where: { bookingId, revokedAt: null, expiresAt: { gt: now } } });
-    if (active.length !== scopes.length || scopes.some((scope) => !active.some((item) => item.scope === scope))) throw notFound("Booking");
+    if (active.length !== scopes.length || scopes.some((scope) => !active.some((item) => item.scope === scope))) throw notFound("Buchung");
     const acknowledged = await tx.bookingManageSession.updateMany({ where: { id: session.id, acknowledgedAt: null, revokedAt: null }, data: { acknowledgedAt: now } });
     const revoked = await tx.bookingCapability.updateMany({ where: { id: { in: active.map((item) => item.id) }, revokedAt: null }, data: { revokedAt: now } });
-    if (acknowledged.count !== 1 || revoked.count !== scopes.length) throw notFound("Booking");
+    if (acknowledged.count !== 1 || revoked.count !== scopes.length) throw notFound("Buchung");
   });
   return { acknowledged: true as const };
 }

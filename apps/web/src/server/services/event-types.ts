@@ -16,7 +16,7 @@ export async function listEventTypes(workspaceId: string) {
 export async function getEventTypeBySlug(slug: string, activeOnly = true) {
   enterPublicDatabaseContext(slug);
   const eventType = await db.eventType.findUnique({ where: { slug }, include: includeOptions });
-  if (!eventType || (activeOnly && !eventType.isActive)) throw notFound("Event type");
+  if (!eventType || (activeOnly && !eventType.isActive)) throw notFound("Terminart");
   enterPublicDatabaseContext(slug, eventType.workspaceId, eventType.id);
   return eventType;
 }
@@ -24,14 +24,14 @@ export async function getEventTypeBySlug(slug: string, activeOnly = true) {
 export async function getEventTypeForSlotsBySlug(slug: string, activeOnly = true) {
   enterPublicDatabaseContext(slug);
   const eventType = await db.eventType.findUnique({ where: { slug }, include: slotOptions });
-  if (!eventType || (activeOnly && !eventType.isActive)) throw notFound("Event type");
+  if (!eventType || (activeOnly && !eventType.isActive)) throw notFound("Terminart");
   enterPublicDatabaseContext(slug, eventType.workspaceId, eventType.id);
   return eventType;
 }
 
 export async function getEventTypeById(workspaceId: string, id: string) {
   const eventType = await db.eventType.findFirst({ where: { id, workspaceId }, include: includeOptions });
-  if (!eventType) throw notFound("Event type");
+  if (!eventType) throw notFound("Terminart");
   return mapEventType(eventType);
 }
 
@@ -46,13 +46,13 @@ type CalendarReadiness = (userId: string, workspaceId?: string) => Promise<boole
 async function assertLocationReady(workspaceId: string, ownerId: string, locationType: string, isActive: boolean, readiness: CalendarReadiness = googleCalendarReady) {
   if (!isActive || locationType !== "GOOGLE_MEET") return;
   if (!await readiness(ownerId, workspaceId)) {
-    throw conflict("Connect an active Google Calendar account before publishing a Google Meet event.");
+    throw conflict("Verbinde zuerst ein aktives Google-Kalender-Konto, bevor du eine Google-Meet-Terminart veröffentlichst.");
   }
 }
 
 export async function createEventType(workspaceId: string, ownerId: string, input: CreateEventTypeInput) {
   enterDatabaseAction("event_write");
-  if (await db.eventType.findUnique({ where: { slug: input.slug } })) throw conflict("That booking link is already in use.");
+  if (await db.eventType.findUnique({ where: { slug: input.slug } })) throw conflict("Dieser Buchungslink wird bereits verwendet.");
   const durations = normalizedDurations(input).map((item) => ({
     label: item.label, durationMinutes: item.durationMinutes, isDefault: item.isDefault,
     priceCents: item.priceCents, currency: item.currency, position: item.position,
@@ -72,8 +72,8 @@ export async function createEventType(workspaceId: string, ownerId: string, inpu
 export async function updateEventType(workspaceId: string, _actingUserId: string, id: string, input: UpdateEventTypeInput, readiness: CalendarReadiness = googleCalendarReady) {
   enterDatabaseAction("event_write");
   const current = await db.eventType.findFirst({ where: { id, workspaceId }, include: includeOptions });
-  if (!current) throw notFound("Event type");
-  if (input.slug && input.slug !== current.slug && await db.eventType.findUnique({ where: { slug: input.slug } })) throw conflict("That booking link is already in use.");
+  if (!current) throw notFound("Terminart");
+  if (input.slug && input.slug !== current.slug && await db.eventType.findUnique({ where: { slug: input.slug } })) throw conflict("Dieser Buchungslink wird bereits verwendet.");
   const candidateDurations = input.durations ?? current.durations;
   if ((input.isActive ?? current.isActive) && candidateDurations.some((item) => item.priceCents > 0)) assertPaidBookingsConfigured();
   await assertLocationReady(workspaceId, current.ownerId, input.locationType ?? current.locationType, input.isActive ?? current.isActive, readiness);
@@ -82,7 +82,7 @@ export async function updateEventType(workspaceId: string, _actingUserId: string
     if (durations) {
       const suppliedIds = durations.flatMap((item) => item.id ? [item.id] : []);
       const ownedIds = await tx.eventDuration.findMany({ where: { eventTypeId: id, id: { in: suppliedIds } }, select: { id: true } });
-      if (ownedIds.length !== suppliedIds.length) throw conflict("A duration option does not belong to this event type.");
+      if (ownedIds.length !== suppliedIds.length) throw conflict("Eine Dauer-Option gehört nicht zu dieser Terminart.");
       await tx.eventDuration.updateMany({ where: { eventTypeId: id }, data: { isDefault: false } });
       await tx.eventDuration.updateMany({ where: { eventTypeId: id, id: { notIn: suppliedIds } }, data: { isActive: false } });
       for (const duration of durations) {
@@ -94,7 +94,7 @@ export async function updateEventType(workspaceId: string, _actingUserId: string
     if (questions) {
       const suppliedIds = questions.flatMap((item) => item.id ? [item.id] : []);
       const ownedIds = await tx.customQuestion.findMany({ where: { eventTypeId: id, id: { in: suppliedIds } }, select: { id: true } });
-      if (ownedIds.length !== suppliedIds.length) throw conflict("A custom question does not belong to this event type.");
+      if (ownedIds.length !== suppliedIds.length) throw conflict("Eine benutzerdefinierte Frage gehört nicht zu dieser Terminart.");
       await tx.customQuestion.updateMany({ where: { eventTypeId: id, id: { notIn: suppliedIds } }, data: { isActive: false } });
       for (const question of questions) {
         const { id: questionId, options, ...data } = question; const stored = { ...data, optionsJson: JSON.stringify(options), isActive: true };
@@ -109,7 +109,7 @@ export async function updateEventType(workspaceId: string, _actingUserId: string
 export async function deleteEventType(workspaceId: string, id: string) {
   enterDatabaseAction("event_write");
   const current = await db.eventType.findFirst({ where: { id, workspaceId } });
-  if (!current) throw notFound("Event type");
+  if (!current) throw notFound("Terminart");
   if (await db.booking.count({ where: { eventTypeId: id } })) await db.eventType.update({ where: { id }, data: { isActive: false } });
   else await db.eventType.delete({ where: { id } });
 }

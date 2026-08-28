@@ -70,22 +70,22 @@ describe("scoped booking capabilities", () => {
       idempotencyKey: randomUUID(), requestFingerprint: randomUUID(), capabilityVersion: identity.version, capabilityKeyId: identity.keyId, manageExpiresAt: identity.expiresAt,
       capabilities: { createMany: { data: capabilityRows(bookingId, identity.version, identity.expiresAt, identity.keyId).map(({ bookingId: ignored, ...row }) => { void ignored; return row; }) } },
     } });
-    await expect(requireBookingCapability(bookingId, "cancel", tokens.read)).rejects.toThrow(/Booking/);
+    await expect(requireBookingCapability(bookingId, "cancel", tokens.read)).rejects.toThrow(/Buchung/);
     const exchangedAt = new Date("2026-08-21T12:00:00Z");
     const exchanged = await exchangeBookingCapabilities(bookingId, tokens, exchangedAt);
     expect(exchanged.expiresAt).toEqual(identity.expiresAt);
     expect(manageCookieName(bookingId)).not.toBe(manageCookieName("another-booking"));
     const cookieName = manageCookieName(bookingId); const oldRequest = new Request("http://localhost", { headers: { cookie: `${cookieName}=${exchanged.token}` } });
     await expect(requireBookingManageSession(oldRequest, bookingId, "read")).resolves.toMatchObject({ bookingId });
-    await expect(requireBookingManageSession(oldRequest, bookingId, "reschedule")).rejects.toThrow(/Booking/);
+    await expect(requireBookingManageSession(oldRequest, bookingId, "reschedule")).rejects.toThrow(/Buchung/);
     await expect(requireBookingCapability(bookingId, "cancel", tokens.cancel)).resolves.toMatchObject({ bookingId });
     expect(await exchangeBookingCapabilities(bookingId, tokens, new Date(exchangedAt.getTime() + 24 * 60 * 60_000))).toEqual(exchanged);
     await acknowledgeBookingManageSession(oldRequest, bookingId, new Date(exchangedAt.getTime() + 24 * 60 * 60_000));
     await expect(acknowledgeBookingManageSession(oldRequest, bookingId, new Date(exchangedAt.getTime() + 24 * 60 * 60_000 + 1))).resolves.toEqual({ acknowledged: true });
     const session = await requireBookingManageSession(oldRequest, bookingId, "reschedule");
     await expect(requireBookingManageSession(oldRequest, bookingId, "reschedule")).resolves.toMatchObject({ id: session.id });
-    await expect(requireBookingCapability(bookingId, "cancel", tokens.cancel)).rejects.toThrow(/Booking/);
-    await expect(exchangeBookingCapabilities(bookingId, tokens, new Date(exchangedAt.getTime() + 24 * 60 * 60_000 + 1))).rejects.toThrow(/Booking/);
+    await expect(requireBookingCapability(bookingId, "cancel", tokens.cancel)).rejects.toThrow(/Buchung/);
+    await expect(exchangeBookingCapabilities(bookingId, tokens, new Date(exchangedAt.getTime() + 24 * 60 * 60_000 + 1))).rejects.toThrow(/Buchung/);
     expect(await db.bookingManageSession.count({ where: { bookingId } })).toBe(1);
     expect(await db.bookingCapability.count({ where: { bookingId, revokedAt: { not: null } } })).toBe(3);
     await db.booking.delete({ where: { id: bookingId } });

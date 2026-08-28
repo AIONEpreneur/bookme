@@ -61,7 +61,7 @@ describe("Google Calendar notification adapter", () => {
     await expect(evaluateGoogleScopeProbes(async () => { throw { response: { status: 403 } }; }, async () => { throw { code: 401 }; })).resolves.toEqual({ scopeHealth: "insufficient", missingScopes: [...REQUIRED_GOOGLE_CALENDAR_SCOPES] });
     await expect(evaluateGoogleScopeProbes(async () => { throw new Error("network unavailable"); }, async () => undefined)).resolves.toEqual({ scopeHealth: "unavailable", missingScopes: [] });
     await expect(evaluateGoogleScopeEvidence([REQUIRED_GOOGLE_CALENDAR_SCOPES[0]], async () => undefined, async () => undefined)).resolves.toEqual({ scopeHealth: "insufficient", missingScopes: [REQUIRED_GOOGLE_CALENDAR_SCOPES[1]] });
-    expect(() => assertRequiredGoogleScopes(REQUIRED_GOOGLE_CALENDAR_SCOPES[0])).toThrow(/both Calendar permissions/);
+    expect(() => assertRequiredGoogleScopes(REQUIRED_GOOGLE_CALENDAR_SCOPES[0])).toThrow(/beide Kalender-Berechtigungen/);
     expect(() => assertRequiredGoogleScopes(REQUIRED_GOOGLE_CALENDAR_SCOPES.join(" "))).not.toThrow();
   });
 

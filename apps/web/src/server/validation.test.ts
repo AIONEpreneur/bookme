@@ -7,14 +7,14 @@ describe("public input validation", () => {
     expect(() => availabilityInput.parse({ timeZone: "UTC", intervals: [
       { dayOfWeek: 1, startMinute: 540, endMinute: 600 },
       { dayOfWeek: 1, startMinute: 590, endMinute: 660 },
-    ] })).toThrow(/overlap/);
+    ] })).toThrow(/überschneiden/);
   });
 
   it("rejects available hours mixed with a full-day unavailable override", () => {
     expect(() => availabilityInput.parse({ timeZone: "UTC", intervals: [], overrides: [
       { dateKey: "2026-08-24", isAvailable: false },
       { dateKey: "2026-08-24", isAvailable: true, startMinute: 540, endMinute: 600 },
-    ] })).toThrow(/full-day unavailable/);
+    ] })).toThrow(/ganztägig nicht verfügbare/);
   });
 
   it("normalizes invitee email and rejects malformed booking input", () => {
@@ -26,11 +26,11 @@ describe("public input validation", () => {
   it("requires safe public booking slugs and testable pricing", () => {
     const base = { name: "Strategy Call", slug: "strategy-call", description: null, durationMinutes: 30, color: "#2563EB", locationType: "GOOGLE_MEET", locationValue: null, isActive: true, bufferBeforeMinutes: 0, bufferAfterMinutes: 0, minimumNoticeMinutes: 120, bookingWindowDays: 60, priceCents: 0, currency: "usd" };
     expect(eventTypeInput.parse(base).slug).toBe("strategy-call");
-    expect(() => eventTypeInput.parse({ ...base, slug: "Bad Slug" })).toThrow(/lowercase/);
+    expect(() => eventTypeInput.parse({ ...base, slug: "Bad Slug" })).toThrow(/Kleinbuchstaben/);
     expect(() => eventTypeInput.parse({ ...base, durations: [
       { label: "30 min", durationMinutes: 30, isDefault: true, priceCents: 0, currency: "usd", position: 0 },
       { label: "60 min", durationMinutes: 60, isDefault: true, priceCents: 0, currency: "usd", position: 1 },
-    ] })).toThrow(/Exactly one/);
+    ] })).toThrow(/Genau eine/);
   });
 
   it("bounds image candidates and leaves decoding plus legacy preservation to the ingestion service", () => {

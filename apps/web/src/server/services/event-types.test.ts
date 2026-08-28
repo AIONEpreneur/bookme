@@ -44,7 +44,7 @@ describe("event duration lifecycle", () => {
     expect((await db.customQuestion.findUniqueOrThrow({ where: { id: event.questions[1]!.id } })).isActive).toBe(false);
     expect(await db.bookingAnswer.count({ where: { bookingId: booking.id, questionId: event.questions[0]!.id } })).toBe(1);
     delete process.env.CALENDAR_PROVIDER;
-    await expect(updateEventType(workspaceId, owner.id, event.id, { locationType: "GOOGLE_MEET" })).rejects.toThrow(/Connect an active Google Calendar/);
+    await expect(updateEventType(workspaceId, owner.id, event.id, { locationType: "GOOGLE_MEET" })).rejects.toThrow(/aktives Google-Kalender-Konto/);
     process.env.CALENDAR_PROVIDER = "google"; process.env.GOOGLE_CLIENT_ID = "env-client"; process.env.GOOGLE_CLIENT_SECRET = "env-secret"; process.env.GOOGLE_REFRESH_TOKEN = "env-refresh"; process.env.DEMO_MODE = "true"; process.env.GOOGLE_ENV_WORKSPACE_ID = workspaceId;
     await getGoogleScopeHealth(owner.id, async () => ({ scopeHealth: "complete", missingScopes: [] }), Date.now(), workspaceId);
     await expect(updateEventType(workspaceId, owner.id, event.id, { locationType: "GOOGLE_MEET" })).resolves.toMatchObject({ locationType: "GOOGLE_MEET" });

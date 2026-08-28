@@ -19,7 +19,7 @@ export async function getAccountSummary(access: WorkspaceAccess): Promise<Accoun
     db.membership.findMany({ where: { workspaceId: access.workspaceId }, include: { user: true }, orderBy: [{ role: "asc" }, { createdAt: "asc" }] }),
   ]);
   const activeMembership = memberships.find((membership) => membership.workspaceId === access.workspaceId);
-  if (!activeMembership) throw new AppError("FORBIDDEN", "You do not have access to this workspace.", 403);
+  if (!activeMembership) throw new AppError("FORBIDDEN", "Du hast keinen Zugriff auf diesen Workspace.", 403);
   return {
     user: mapUser(access.user),
     workspace: mapWorkspaceMembership(activeMembership),
@@ -55,18 +55,18 @@ export async function registerAccount(input: RegistrationInput, observeWork: (ph
     await tx.$executeRaw`INSERT INTO "AvailabilitySchedule" ("id","workspaceId","userId","timeZone","createdAt","updatedAt") SELECT ${scheduleId},${workspaceId},${userId},${input.timeZone},${now},${now} WHERE ${created}=1`; observeWork("AVAILABILITY_INSERT");
     await tx.$executeRaw`UPDATE "AccountActionToken" SET "revokedAt"=${now} WHERE "userId"=${userId} AND purpose='EMAIL_VERIFY' AND "consumedAt" IS NULL AND "revokedAt" IS NULL AND ${created}=1`; observeWork("TOKEN_REVOKE");
     await tx.$executeRaw`INSERT INTO "AccountActionToken" ("id","workspaceId","userId","purpose","email","tokenHash","expiresAt","createdAt") SELECT ${tokenId},${workspaceId},${userId},'EMAIL_VERIFY',${email},${authority.tokenHash},${expiresAt},${now} WHERE ${created}=1`; observeWork("TOKEN_INSERT");
-    await tx.$executeRaw`INSERT INTO "EmailOutbox" ("id","workspaceId","kind","recipientEmail","subjectSnapshot","payloadJson","idempotencyKey","nextAttemptAt","createdAt","updatedAt") SELECT ${outboxId},${workspaceId},'EMAIL_VERIFY',${email},'Verify your SnagTime email',${payloadJson},${idempotencyKey},${now},${now},${now} WHERE ${created}=1`; observeWork("OUTBOX_INSERT");
+    await tx.$executeRaw`INSERT INTO "EmailOutbox" ("id","workspaceId","kind","recipientEmail","subjectSnapshot","payloadJson","idempotencyKey","nextAttemptAt","createdAt","updatedAt") SELECT ${outboxId},${workspaceId},'EMAIL_VERIFY',${email},'Bestätige deine SnagTime-E-Mail-Adresse',${payloadJson},${idempotencyKey},${now},${now},${now} WHERE ${created}=1`; observeWork("OUTBOX_INSERT");
   });
   return { accepted: true as const };
 }
 
 export async function changeAccountPassword(access: WorkspaceAccess, currentPassword: string, newPassword: string) {
   enterDatabaseAction("account_write");
-  if (!await verifyPassword(currentPassword, access.user.passwordHash)) throw new AppError("AUTHENTICATION_FAILED", "The account request could not be completed.", 401);
+  if (!await verifyPassword(currentPassword, access.user.passwordHash)) throw new AppError("AUTHENTICATION_FAILED", "Die Kontoanfrage konnte nicht abgeschlossen werden.", 401);
   const passwordHash = await hashPassword(newPassword); const token = createSessionToken(access.user.id); const payload = readSessionToken(token)!; const now = new Date();
   await db.$transaction(async (tx) => {
     const changed = await tx.user.updateMany({ where: { id: access.user.id, passwordHash: access.user.passwordHash }, data: { passwordHash } });
-    if (changed.count !== 1) throw new AppError("AUTHENTICATION_FAILED", "The account request could not be completed.", 401);
+    if (changed.count !== 1) throw new AppError("AUTHENTICATION_FAILED", "Die Kontoanfrage konnte nicht abgeschlossen werden.", 401);
     await tx.authSession.updateMany({ where: { userId: access.user.id, revokedAt: null }, data: { revokedAt: now } });
     await tx.authSession.create({ data: { userId: access.user.id, activeWorkspaceId: access.workspaceId, membershipId: access.membership.id, tokenHash: sessionTokenHash(token), expiresAt: new Date(payload.expiresAt) } });
   });
@@ -87,19 +87,19 @@ export async function createWorkspaceInvitation(access: WorkspaceAccess, email: 
   const normalized = email.toLowerCase(); const newId = randomBytes(18).toString("base64url");
   await db.$transaction(async (tx) => {
     const actor = await tx.membership.findFirst({ where: { id: access.membership.id, workspaceId: access.workspaceId, userId: access.user.id, status: "ACTIVE", role: { in: ["OWNER","ADMIN"] } } });
-    if (!actor) throw new AppError("FORBIDDEN", "You do not have access to this workspace action.", 403);
+    if (!actor) throw new AppError("FORBIDDEN", "Du hast keine Berechtigung für diese Workspace-Aktion.", 403);
     if (await tx.membership.findFirst({ where: { workspaceId: access.workspaceId, user: { email: normalized }, status: "ACTIVE" } })) { createActionToken("WORKSPACE_INVITATION", invitationTokenBinding(access.workspaceId, normalized, role, 1), newId); return; }
     const prior = await tx.workspaceInvitation.findUnique({ where: { workspaceId_email_status: { workspaceId: access.workspaceId, email: normalized, status: "PENDING" } } });
     const id = prior?.id ?? newId; const version = (prior?.tokenVersion ?? 0) + 1; const binding = invitationTokenBinding(access.workspaceId, normalized, role, version); const authority = createActionToken("WORKSPACE_INVITATION", binding, id); const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60_000);
     const invitation = prior
       ? await tx.workspaceInvitation.update({ where: { id }, data: { role, invitedById: access.user.id, expiresAt, tokenVersion: version, tokenHash: authority.tokenHash } })
       : await tx.workspaceInvitation.create({ data: { id, workspaceId: access.workspaceId, email: normalized, role, invitedById: access.user.id, expiresAt, tokenVersion: version, tokenHash: authority.tokenHash } });
-    await enqueueEmail(tx, { workspaceId: access.workspaceId, kind: "WORKSPACE_INVITATION", recipientEmail: normalized, subject: `Invitation to ${access.workspace.name}`, payload: { invitationId: invitation.id, tokenVersion: version, workspaceName: access.workspace.name }, idempotencyKey: `email:invitation:${invitation.id}:${version}` });
+    await enqueueEmail(tx, { workspaceId: access.workspaceId, kind: "WORKSPACE_INVITATION", recipientEmail: normalized, subject: `Einladung zu ${access.workspace.name}`, payload: { invitationId: invitation.id, tokenVersion: version, workspaceName: access.workspace.name }, idempotencyKey: `email:invitation:${invitation.id}:${version}` });
   });
   return { accepted: true as const };
 }
 
-function invalidInvitation() { return new AppError("INVALID_OR_EXPIRED_TOKEN", "This invitation is invalid or expired.", 400); }
+function invalidInvitation() { return new AppError("INVALID_OR_EXPIRED_TOKEN", "Diese Einladung ist ungültig oder abgelaufen.", 400); }
 export async function acceptWorkspaceInvitation(access: WorkspaceAccess, token: string, now = new Date()) {
   const id = actionTokenId(token); if (!id || !access.user.emailVerifiedAt) throw invalidInvitation();
   enterCapabilityDatabaseContext(id,access.user.id);
@@ -132,12 +132,12 @@ export async function updateMembershipRole(access: WorkspaceAccess, membershipId
   enterDatabaseAction("membership_change");
   await db.$transaction(async (tx) => {
     const actor = await tx.membership.findFirst({ where: { id: access.membership.id, workspaceId: access.workspaceId, userId: access.user.id, role: "OWNER", status: "ACTIVE" } });
-    if (!actor) throw new AppError("FORBIDDEN", "You do not have access to this workspace action.", 403);
+    if (!actor) throw new AppError("FORBIDDEN", "Du hast keine Berechtigung für diese Workspace-Aktion.", 403);
     const target = await tx.membership.findFirst({ where: { id: membershipId, workspaceId: access.workspaceId } });
-    if (!target) throw notFound("Membership");
+    if (!target) throw notFound("Mitgliedschaft");
     if (target.role === "OWNER" && (role !== "OWNER" || status !== "ACTIVE")) {
       const owners = await tx.membership.count({ where: { workspaceId: access.workspaceId, role: "OWNER", status: "ACTIVE" } });
-      if (owners <= 1) throw conflict("A workspace must retain at least one active owner.");
+      if (owners <= 1) throw conflict("Ein Workspace muss mindestens einen aktiven Owner behalten.");
     }
     const rank = { OWNER: 3, ADMIN: 2, MEMBER: 1 } as const;
     if (status !== "ACTIVE" || rank[role] < rank[target.role as WorkspaceRole]) {
@@ -147,7 +147,7 @@ export async function updateMembershipRole(access: WorkspaceAccess, membershipId
         tx.integrationOutbox.count({ where: { workspaceId: access.workspaceId, status: { in: ["PENDING", "RETRY", "PROCESSING"] }, booking: { hostId: target.userId } } }),
         tx.oAuthConnection.count({ where: { workspaceId: access.workspaceId, userId: target.userId } }),
       ]);
-      if (activeEvents || openBookings || providerWork || oauthCustody) throw conflict("Transfer or close this member's active events, bookings, provider work, and Google credential before changing their workspace authority.");
+      if (activeEvents || openBookings || providerWork || oauthCustody) throw conflict("Übertrage oder schließe zuerst die aktiven Terminarten, Buchungen, Provider-Aufgaben und Google-Zugangsdaten dieses Mitglieds, bevor du seine Workspace-Berechtigung änderst.");
     }
     await tx.membership.update({ where: { id: target.id }, data: { role, status } });
     if (status !== "ACTIVE") await tx.authSession.updateMany({ where: { membershipId: target.id, revokedAt: null }, data: { revokedAt: new Date() } });

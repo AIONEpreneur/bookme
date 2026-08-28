@@ -46,7 +46,7 @@ export function missingRequiredGoogleScopes(grantedScopes: readonly string[]) {
 }
 export function assertRequiredGoogleScopes(grantedScopeText: string | null | undefined) {
   const missingScopes = missingRequiredGoogleScopes((grantedScopeText || "").split(/\s+/).filter(Boolean));
-  if (missingScopes.length) throw new AppError("GOOGLE_SCOPE_INSUFFICIENT", "Google did not grant every required Calendar capability. Reconnect and approve both Calendar permissions.", 400);
+  if (missingScopes.length) throw new AppError("GOOGLE_SCOPE_INSUFFICIENT", "Google hat nicht alle erforderlichen Kalender-Berechtigungen erteilt. Verbinde dich erneut und bestätige beide Kalender-Berechtigungen.", 400);
 }
 export async function evaluateGoogleScopeEvidence(grantedScopes: readonly string[], freebusyProbe: () => Promise<unknown>, eventsProbe: () => Promise<unknown>): Promise<GoogleScopeHealth> {
   const probeHealth = await evaluateGoogleScopeProbes(freebusyProbe, eventsProbe); const exactMissing = missingRequiredGoogleScopes(grantedScopes);
@@ -342,8 +342,8 @@ function isProviderConflict(error: unknown) { return typeof error === "object" &
 export function isProviderNotFound(error: unknown) { return typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === 404; }
 
 async function credentialWorkspace(userId: string, workspaceId?: string) {
-  if (!workspaceId) throw new AppError("WORKSPACE_CONTEXT_REQUIRED", "A workspace-bound calendar operation is required.", 400);
-  if (!await liveWorkspaceMember(userId, workspaceId)) throw new AppError("FORBIDDEN", "You no longer have access to this workspace calendar.", 403);
+  if (!workspaceId) throw new AppError("WORKSPACE_CONTEXT_REQUIRED", "Für diese Kalender-Operation ist ein Workspace-Kontext erforderlich.", 400);
+  if (!await liveWorkspaceMember(userId, workspaceId)) throw new AppError("FORBIDDEN", "Du hast keinen Zugriff mehr auf diesen Workspace-Kalender.", 403);
   return workspaceId;
 }
 
@@ -362,7 +362,7 @@ export async function googleCredentialsReady(userId: string, workspaceId?: strin
 export function clearGoogleScopeHealthCache(workspaceId?: string) { if (workspaceId) googleScopeHealthCache.delete(workspaceId); else googleScopeHealthCache.clear(); }
 export async function getGoogleScopeHealth(userId: string, scopeProbe?: () => Promise<GoogleScopeHealth>, now = Date.now(), workspaceId?: string): Promise<GoogleScopeHealth> {
   const resolvedWorkspaceId = publicGoogleEventId() ? workspaceId : await credentialWorkspace(userId, workspaceId);
-  if (!resolvedWorkspaceId) throw new AppError("WORKSPACE_CONTEXT_REQUIRED", "A workspace-bound calendar operation is required.", 400);
+  if (!resolvedWorkspaceId) throw new AppError("WORKSPACE_CONTEXT_REQUIRED", "Für diese Kalender-Operation ist ein Workspace-Kontext erforderlich.", 400);
   if (!await googleCredentialsReady(userId, resolvedWorkspaceId)) { googleScopeHealthCache.delete(resolvedWorkspaceId); return { scopeHealth: "unavailable", missingScopes: [...REQUIRED_GOOGLE_CALENDAR_SCOPES] }; }
   if (providerProofMode()) return { scopeHealth: "complete", missingScopes: [] };
   const cached = googleScopeHealthCache.get(resolvedWorkspaceId); if (cached && cached.expiresAt > now) return cached.value;
@@ -382,30 +382,30 @@ class FallbackCalendarService implements CalendarService {
   private readonly local = new LocalCalendarService();
   private async service(userId: string, workspaceId?: string) {
     if (process.env.CALENDAR_PROVIDER === "local" && process.env.NODE_ENV !== "production") return this.local;
-    if (process.env.CALENDAR_PROVIDER !== "google" || !await googleCalendarReady(userId, workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "This workspace requires a live Google Calendar connection before availability can be trusted.", 503);
+    if (process.env.CALENDAR_PROVIDER !== "google" || !await googleCalendarReady(userId, workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "Dieser Workspace benötigt eine aktive Google-Kalender-Verbindung, bevor die Verfügbarkeit verlässlich ist.", 503);
     return providerProofMode() ? this.proofGoogle : this.google;
   }
   async getBusyIntervals(userId: string, timeMin: Date, timeMax: Date, workspaceId?: string) { return (await this.service(userId, workspaceId)).getBusyIntervals(userId, timeMin, timeMax, workspaceId); }
   async getBusyIntervalsExcludingEvent(userId: string, timeMin: Date, timeMax: Date, excludedEventId: string, requiredProvider?: "google" | "local", workspaceId?: string) {
     let service: CalendarService;
     if (requiredProvider === "google") {
-      if (!await googleCredentialsReady(userId, workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "This accepted Google booking requires its configured provider for conflict checks.", 503);
+      if (!await googleCredentialsReady(userId, workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "Diese bestätigte Google-Buchung benötigt ihren konfigurierten Provider für die Konfliktprüfung.", 503);
       service = providerProofMode() ? this.proofGoogle : this.google;
     } else if (requiredProvider === "local") service = this.local;
     else service = await this.service(userId, workspaceId);
     return service.getBusyIntervalsExcludingEvent?.(userId, timeMin, timeMax, excludedEventId, requiredProvider, workspaceId) ?? service.getBusyIntervals(userId, timeMin, timeMax, workspaceId);
   }
   private async bookingService(booking: CalendarBooking) {
-    if (booking.calendarProviderSnapshot === "provider_recovery_required") throw new AppError("CALENDAR_PROVIDER_RECOVERY_REQUIRED", "This upgraded booking requires provider-lineage reconciliation before calendar mutation.", 503);
+    if (booking.calendarProviderSnapshot === "provider_recovery_required") throw new AppError("CALENDAR_PROVIDER_RECOVERY_REQUIRED", "Diese migrierte Buchung erfordert einen Provider-Abgleich, bevor der Kalender geändert werden kann.", 503);
     if (booking.calendarProviderSnapshot !== "google") return this.local;
-    if (!await googleCredentialsReady(booking.hostId, booking.workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "The accepted Google Calendar booking is waiting for its configured provider credentials.", 503);
+    if (!await googleCredentialsReady(booking.hostId, booking.workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "Die bestätigte Google-Kalender-Buchung wartet auf die konfigurierten Provider-Zugangsdaten.", 503);
     return providerProofMode() ? this.proofGoogle : this.google;
   }
   async createBookingEvent(booking: CalendarBooking) { return (await this.bookingService(booking)).createBookingEvent(booking); }
   async updateBookingEvent(booking: CalendarBooking) { return (await this.bookingService(booking)).updateBookingEvent(booking); }
   async deleteBookingEvent(booking: CalendarBooking) {
     if (booking.calendarProviderSnapshot === "provider_recovery_required") {
-      if (!await googleCredentialsReady(booking.hostId, booking.workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "This recovery delete is waiting for its configured Google credentials.", 503);
+      if (!await googleCredentialsReady(booking.hostId, booking.workspaceId)) throw new AppError("GOOGLE_CALENDAR_RETRY", "Diese Wiederherstellungs-Löschung wartet auf die konfigurierten Google-Zugangsdaten.", 503);
       return (providerProofMode() ? this.proofGoogle : this.google).deleteBookingEvent({ ...booking, externalCalendarEventId: providerCalendarEventId(booking.id) });
     }
     return (await this.bookingService(booking)).deleteBookingEvent(booking);
@@ -446,22 +446,22 @@ export async function googleCalendarStatus(
 type VerifiedGoogleAuthorization = { accessToken?: string | null; refreshToken?: string | null; expiresAt?: Date | null; providerUserId: string; scope: string };
 async function persistVerifiedGoogleAuthorizationWithinTransaction(tx: Prisma.TransactionClient, userId: string, expectedConnectionId: string | null, expectedConnectionGeneration: number | null, tokens: VerifiedGoogleAuthorization, resolvedWorkspaceId: string) {
   const administrator = await tx.membership.findFirst({ where: { workspaceId: resolvedWorkspaceId, userId, status: "ACTIVE", role: { in: ["OWNER", "ADMIN"] } }, select: { id: true } });
-  if (!administrator) throw new AppError("FORBIDDEN", "Administrator access is required to connect Google Calendar.", 403);
+  if (!administrator) throw new AppError("FORBIDDEN", "Zum Verbinden von Google Kalender ist Administrator-Zugriff erforderlich.", 403);
   if (expectedConnectionId) {
-    if (expectedConnectionGeneration == null) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "The Google credential generation was not bound. Start again.", 409);
+    if (expectedConnectionGeneration == null) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "Die Generation der Google-Zugangsdaten wurde nicht gebunden. Bitte starte erneut.", 409);
     const predecessor = await tx.oAuthConnection.findFirst({ where: { id: expectedConnectionId, workspaceId: resolvedWorkspaceId, provider: "google", disconnectStatus: "ACTIVE", credentialGeneration: expectedConnectionGeneration } });
-    if (!predecessor) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "The Google credential changed while authorization was completing. Start again.", 409);
-    if (predecessor.providerUserId !== tokens.providerUserId) throw new AppError("GOOGLE_SUBJECT_REPLACEMENT_REQUIRES_DISCONNECT", "Disconnect the current Google account successfully before connecting a different Google account.", 409);
-    if (!tokens.refreshToken && !predecessor.refreshToken) throw new AppError("GOOGLE_REFRESH_REQUIRED", "Google did not return durable offline access. Reconnect and approve consent.", 400);
+    if (!predecessor) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "Die Google-Zugangsdaten haben sich während der Autorisierung geändert. Bitte starte erneut.", 409);
+    if (predecessor.providerUserId !== tokens.providerUserId) throw new AppError("GOOGLE_SUBJECT_REPLACEMENT_REQUIRES_DISCONNECT", "Trenne zuerst das aktuelle Google-Konto vollständig, bevor du ein anderes Google-Konto verbindest.", 409);
+    if (!tokens.refreshToken && !predecessor.refreshToken) throw new AppError("GOOGLE_REFRESH_REQUIRED", "Google hat keinen dauerhaften Offline-Zugriff gewährt. Verbinde dich erneut und erteile die Zustimmung.", 400);
     const saved = await tx.oAuthConnection.updateMany({ where: { id: predecessor.id, workspaceId: resolvedWorkspaceId, userId: predecessor.userId, provider: "google", providerUserId: tokens.providerUserId, disconnectStatus: "ACTIVE", credentialGeneration: expectedConnectionGeneration }, data: { userId, accessToken: encryptToken(tokens.accessToken), refreshToken: predecessor.refreshToken ? undefined : tokens.refreshToken ? encryptToken(tokens.refreshToken) : undefined, expiresAt: tokens.expiresAt, scope: tokens.scope, credentialGeneration: { increment: 1 } } });
-    if (saved.count !== 1) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "The Google credential changed while authorization was completing. Start again.", 409);
+    if (saved.count !== 1) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "Die Google-Zugangsdaten haben sich während der Autorisierung geändert. Bitte starte erneut.", 409);
     return;
   }
-  if (!tokens.refreshToken) throw new AppError("GOOGLE_REFRESH_REQUIRED", "Google did not return durable offline access. Reconnect and approve consent.", 400);
+  if (!tokens.refreshToken) throw new AppError("GOOGLE_REFRESH_REQUIRED", "Google hat keinen dauerhaften Offline-Zugriff gewährt. Verbinde dich erneut und erteile die Zustimmung.", 400);
   const existing = await tx.oAuthConnection.count({ where: { workspaceId: resolvedWorkspaceId, provider: "google" } });
-  if (existing !== 0) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "A Google credential appeared while authorization was completing. Start again.", 409);
+  if (existing !== 0) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "Während der Autorisierung sind bereits Google-Zugangsdaten aufgetaucht. Bitte starte erneut.", 409);
   try { await tx.oAuthConnection.create({ data: { workspaceId: resolvedWorkspaceId, userId, provider: "google", providerUserId: tokens.providerUserId, accessToken: encryptToken(tokens.accessToken), refreshToken: encryptToken(tokens.refreshToken), expiresAt: tokens.expiresAt, scope: tokens.scope, calendarId: process.env.GOOGLE_CALENDAR_ID || "primary", disconnectStatus: "ACTIVE", credentialGeneration: 1 } }); }
-  catch (error) { if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "A Google credential appeared while authorization was completing. Start again.", 409); throw error; }
+  catch (error) { if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "Während der Autorisierung sind bereits Google-Zugangsdaten aufgetaucht. Bitte starte erneut.", 409); throw error; }
 }
 
 export async function persistVerifiedGoogleAuthorization(userId: string, expectedConnectionId: string | null, expectedConnectionGeneration: number | null, tokens: VerifiedGoogleAuthorization, workspaceId?: string) {
@@ -478,10 +478,10 @@ export async function disconnectGoogleCalendar(userId: string, revoke: (token: s
 }, now = new Date(), workspaceId?: string) {
   enterDatabaseAction("oauth_write");
   const resolvedWorkspaceId = await credentialWorkspace(userId, workspaceId);
-  if (!await liveWorkspaceMember(userId, resolvedWorkspaceId, "ADMIN")) throw new AppError("FORBIDDEN", "Administrator access is required to disconnect Google Calendar.", 403);
+  if (!await liveWorkspaceMember(userId, resolvedWorkspaceId, "ADMIN")) throw new AppError("FORBIDDEN", "Zum Trennen von Google Kalender ist Administrator-Zugriff erforderlich.", 403);
   const claimed = await db.$transaction(async (tx) => {
     const administrator = await tx.membership.findFirst({ where: { workspaceId: resolvedWorkspaceId, userId, status: "ACTIVE", role: { in: ["OWNER", "ADMIN"] } }, select: { id: true } });
-    if (!administrator) throw new AppError("FORBIDDEN", "Administrator access is required to disconnect Google Calendar.", 403);
+    if (!administrator) throw new AppError("FORBIDDEN", "Zum Trennen von Google Kalender ist Administrator-Zugriff erforderlich.", 403);
     const current = await tx.oAuthConnection.findUnique({ where: { workspaceId_provider: { workspaceId: resolvedWorkspaceId, provider: "google" } } });
     if (!current) return null;
     const claimableStatuses = [
@@ -489,16 +489,16 @@ export async function disconnectGoogleCalendar(userId: string, revoke: (token: s
       ...(current.disconnectStatus === "REVOKE_RETRY" && current.disconnectRetryAt && current.disconnectRetryAt <= now ? [{ disconnectStatus: "REVOKE_RETRY" as const, disconnectRetryAt: { lte: now } }] : []),
       ...(current.disconnectStatus === "REVOKE_IN_PROGRESS" && current.disconnectLeaseExpiresAt && current.disconnectLeaseExpiresAt <= now ? [{ disconnectStatus: "REVOKE_IN_PROGRESS" as const, disconnectLeaseExpiresAt: { lte: now } }] : []),
     ];
-    if (!claimableStatuses.length) throw new AppError("GOOGLE_REVOKE_PENDING", "Google credential revocation is already pending or in progress.", 409);
+    if (!claimableStatuses.length) throw new AppError("GOOGLE_REVOKE_PENDING", "Der Widerruf der Google-Zugangsdaten ist bereits ausstehend oder in Bearbeitung.", 409);
     const leaseToken = randomBytes(18).toString("base64url");
     const leaseExpiresAt = new Date(now.getTime() + GOOGLE_REVOKE_LEASE_MS);
     const won = await tx.oAuthConnection.updateMany({ where: { id: current.id, workspaceId: resolvedWorkspaceId, userId: current.userId, provider: "google", OR: claimableStatuses }, data: { disconnectStatus: "REVOKE_IN_PROGRESS", disconnectRetryAt: null, disconnectErrorCode: null, disconnectLeaseToken: leaseToken, disconnectLeaseExpiresAt: leaseExpiresAt } });
-    if (won.count !== 1) throw new AppError("GOOGLE_REVOKE_PENDING", "Google credential revocation is already pending or in progress.", 409);
+    if (won.count !== 1) throw new AppError("GOOGLE_REVOKE_PENDING", "Der Widerruf der Google-Zugangsdaten ist bereits ausstehend oder in Bearbeitung.", 409);
     const fenced = await tx.oAuthConnection.findFirstOrThrow({ where: { id: current.id, workspaceId: resolvedWorkspaceId, userId: current.userId, provider: "google", disconnectStatus: "REVOKE_IN_PROGRESS", disconnectLeaseToken: leaseToken, disconnectLeaseExpiresAt: { gt: now } } });
     return { id: fenced.id, credentialUserId: fenced.userId, token: decryptToken(fenced.refreshToken) || decryptToken(fenced.accessToken), leaseToken };
   });
   if (!claimed) {
-    if (environmentGoogleCredentialAllowed(resolvedWorkspaceId)) throw new AppError("ENV_CREDENTIAL_MANAGED_EXTERNALLY", "The environment-provided Google credential must be revoked outside SnagTime.", 409);
+    if (environmentGoogleCredentialAllowed(resolvedWorkspaceId)) throw new AppError("ENV_CREDENTIAL_MANAGED_EXTERNALLY", "Die über die Umgebung bereitgestellten Google-Zugangsdaten müssen außerhalb von SnagTime widerrufen werden.", 409);
     return { disconnected: true as const };
   }
   clearGoogleScopeHealthCache(resolvedWorkspaceId);
@@ -506,13 +506,13 @@ export async function disconnectGoogleCalendar(userId: string, revoke: (token: s
     if (!claimed.token) throw new Error("GOOGLE_REVOKE_TOKEN_MISSING");
     await revoke(claimed.token);
     const removed = await db.oAuthConnection.deleteMany({ where: { id: claimed.id, workspaceId: resolvedWorkspaceId, userId: claimed.credentialUserId, provider: "google", disconnectStatus: "REVOKE_IN_PROGRESS", disconnectLeaseToken: claimed.leaseToken } });
-    if (removed.count !== 1) throw new AppError("GOOGLE_REVOKE_FENCE_LOST", "Google credential revocation was reclaimed by another worker. Refresh and retry.", 409);
+    if (removed.count !== 1) throw new AppError("GOOGLE_REVOKE_FENCE_LOST", "Der Widerruf der Google-Zugangsdaten wurde von einem anderen Prozess übernommen. Bitte lade neu und versuche es erneut.", 409);
     clearGoogleScopeHealthCache(resolvedWorkspaceId); return { disconnected: true as const };
   } catch {
     const retried = await db.oAuthConnection.updateMany({ where: { id: claimed.id, workspaceId: resolvedWorkspaceId, userId: claimed.credentialUserId, provider: "google", disconnectStatus: "REVOKE_IN_PROGRESS", disconnectLeaseToken: claimed.leaseToken }, data: { disconnectStatus: "REVOKE_RETRY", disconnectRetryAt: new Date(now.getTime() + 5 * 60_000), disconnectErrorCode: "GOOGLE_REVOKE_FAILED", disconnectLeaseToken: null, disconnectLeaseExpiresAt: null } });
-    if (retried.count !== 1) throw new AppError("GOOGLE_REVOKE_FENCE_LOST", "Google credential revocation was reclaimed by another worker. Refresh and retry.", 409);
+    if (retried.count !== 1) throw new AppError("GOOGLE_REVOKE_FENCE_LOST", "Der Widerruf der Google-Zugangsdaten wurde von einem anderen Prozess übernommen. Bitte lade neu und versuche es erneut.", 409);
     clearGoogleScopeHealthCache(resolvedWorkspaceId);
-    throw new AppError("GOOGLE_REVOKE_PENDING", "Google access could not be revoked yet. The encrypted credential was retained for a safe retry.", 503);
+    throw new AppError("GOOGLE_REVOKE_PENDING", "Der Google-Zugriff konnte noch nicht widerrufen werden. Die verschlüsselten Zugangsdaten wurden für einen sicheren neuen Versuch aufbewahrt.", 503);
   }
 }
 
@@ -534,11 +534,11 @@ export async function createGoogleAuthorization(userId: string, authSessionId: s
   const nonce = randomBytes(32).toString("base64url");
   await db.$transaction(async (tx) => {
     const session = await tx.authSession.findFirst({ where: { id: authSessionId, userId, revokedAt: null, expiresAt: { gt: new Date() }, membership: { status: "ACTIVE", role: { in: ["OWNER", "ADMIN"] } } } });
-    if (!session) throw new AppError("FORBIDDEN", "Administrator access is required to connect Google Calendar.", 403);
+    if (!session) throw new AppError("FORBIDDEN", "Zum Verbinden von Google Kalender ist Administrator-Zugriff erforderlich.", 403);
     const resolvedWorkspaceId = workspaceId ?? session.activeWorkspaceId;
-    if (session.activeWorkspaceId !== resolvedWorkspaceId) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "The active workspace changed. Start again.", 409);
+    if (session.activeWorkspaceId !== resolvedWorkspaceId) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "Der aktive Workspace hat sich geändert. Bitte starte erneut.", 409);
     const connection = await tx.oAuthConnection.findUnique({ where: { workspaceId_provider: { workspaceId: resolvedWorkspaceId, provider: "google" } }, select: { id: true, disconnectStatus: true, credentialGeneration: true } });
-    if (connection && connection.disconnectStatus !== "ACTIVE") throw new AppError("GOOGLE_REVOKE_PENDING", "Finish revoking the retained Google credential before reconnecting.", 409);
+    if (connection && connection.disconnectStatus !== "ACTIVE") throw new AppError("GOOGLE_REVOKE_PENDING", "Schließe zuerst den Widerruf der aufbewahrten Google-Zugangsdaten ab, bevor du dich erneut verbindest.", 409);
     await tx.oAuthState.create({ data: { id: state, workspaceId: resolvedWorkspaceId, userId, authSessionId, expectedConnectionId: connection?.id, expectedConnectionGeneration: connection?.credentialGeneration, codeVerifier: encryptToken(codeVerifier)!, nonce: encryptToken(nonce)!, expiresAt: new Date(Date.now() + 10 * 60 * 1000) } });
   });
   return new GoogleCalendarService().authorizationUrl(state, codeChallenge, nonce);
@@ -560,7 +560,7 @@ export async function consumeGoogleAuthorization(userId: string, authSessionId: 
     if (finalizeHooks?.beforeFinalize) await finalizeHooks.beforeFinalize();
     await db.$transaction(async (tx) => {
       const liveSession = await tx.authSession.findFirst({ where: { id: authSessionId, userId, activeWorkspaceId: record.workspaceId, revokedAt: null, expiresAt: { gt: new Date() }, membership: { status: "ACTIVE", role: { in: ["OWNER", "ADMIN"] }, workspaceId: record.workspaceId, userId } } });
-      if (!liveSession) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "The active workspace changed. Start again.", 409);
+      if (!liveSession) throw new AppError("GOOGLE_CREDENTIAL_FENCE_LOST", "Der aktive Workspace hat sich geändert. Bitte starte erneut.", 409);
       const liveState = await tx.oAuthState.findFirst({ where: { id: state, workspaceId: record.workspaceId, userId, authSessionId, processingToken, consumedAt: null, expiresAt: { gt: new Date() }, processingExpiresAt: { gt: new Date() } } });
       if (!liveState) throw new Error("Google OAuth state is already being processed.");
       await persistVerifiedGoogleAuthorizationWithinTransaction(tx, userId, record.expectedConnectionId, record.expectedConnectionGeneration, verified, record.workspaceId);

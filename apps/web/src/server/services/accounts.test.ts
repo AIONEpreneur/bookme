@@ -92,7 +92,7 @@ describe("production workspace accounts", () => {
   it("canonicalizes branding images, rejects new remote URLs, and preserves an unchanged legacy remote URL", async () => {
     const created = await account("branding-image", false);
     const input = { workspaceName: "Brand image", logoUrl: "https://attacker.example/new.png", accentColor: "#2255AA", description: null, footerText: null };
-    await expect(setBranding(created.workspace.id, created.user.id, input)).rejects.toMatchObject({ code: "INVALID_IMAGE", fieldErrors: { logoUrl: [expect.stringMatching(/Remote image URLs/)] } });
+    await expect(setBranding(created.workspace.id, created.user.id, input)).rejects.toMatchObject({ code: "INVALID_IMAGE", fieldErrors: { logoUrl: [expect.stringMatching(/Externe Bild-URLs/)] } });
     const legacy = "https://legacy.example/persisted.png";
     await db.workspaceBranding.update({ where: { workspaceId: created.workspace.id }, data: { logoUrl: legacy } });
     await expect(setBranding(created.workspace.id, created.user.id, { ...input, workspaceName: "Legacy renamed", logoUrl: legacy })).resolves.toMatchObject({ workspaceName: "Legacy renamed", logoUrl: legacy });
@@ -221,16 +221,16 @@ describe("production workspace accounts", () => {
     const owner = await account("lifecycle-owner"); const target = await account("lifecycle-target");
     const membership = await db.membership.create({ data: { workspaceId: owner.workspace.id, userId: target.user.id, role: "ADMIN" } });
     const event = await db.eventType.create({ data: { workspaceId: owner.workspace.id, ownerId: target.user.id, name: "Owned lifecycle", slug: `owned-${crypto.randomUUID()}`, durationMinutes: 30 } });
-    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Transfer or close/);
+    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Übertrage oder schließe/);
     await db.eventType.update({ where: { id: event.id }, data: { isActive: false } });
     const booking = await db.booking.create({ data: { workspaceId: owner.workspace.id, eventTypeId: event.id, hostId: target.user.id, durationMinutes: 30, inviteeName: "Lifecycle", inviteeEmail: "lifecycle@example.com", inviteeTimeZone: "UTC", startAt: new Date("2099-01-01T10:00:00Z"), endAt: new Date("2099-01-01T10:30:00Z"), idempotencyKey: crypto.randomUUID(), requestFingerprint: crypto.randomUUID(), capabilityVersion: crypto.randomUUID(), manageExpiresAt: new Date("2099-02-01T00:00:00Z") } });
-    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Transfer or close/);
+    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Übertrage oder schließe/);
     await db.booking.update({ where: { id: booking.id }, data: { status: "CANCELLED" } });
     const effect = await db.integrationOutbox.create({ data: { workspaceId: owner.workspace.id, bookingId: booking.id, kind: "CALENDAR_DELETE", idempotencyKey: `lifecycle-${crypto.randomUUID()}` } });
-    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Transfer or close/);
+    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Übertrage oder schließe/);
     await db.integrationOutbox.update({ where: { id: effect.id }, data: { status: "COMPLETED" } });
     await db.oAuthConnection.create({ data: { workspaceId: owner.workspace.id, userId: target.user.id, provider: "google" } });
-    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Transfer or close/);
+    await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).rejects.toThrow(/Übertrage oder schließe/);
     await db.oAuthConnection.deleteMany({ where: { workspaceId: owner.workspace.id } });
     await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "ACTIVE")).resolves.toBeUndefined();
     await expect(updateMembershipRole(owner.access, membership.id, "MEMBER", "REMOVED")).resolves.toBeUndefined();

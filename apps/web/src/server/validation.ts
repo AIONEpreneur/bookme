@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { IMAGE_DATA_URL_MAX_CHARS } from "@/server/image-ingestion";
 
-const slug = z.string().trim().min(3).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and hyphens.");
+const slug = z.string().trim().min(3).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Verwende Kleinbuchstaben, Zahlen und Bindestriche.");
 const timeZone = z.string().trim().min(1).max(100).refine((value) => {
   try { Intl.DateTimeFormat(undefined, { timeZone: value }); return true; } catch { return false; }
-}, "Use a valid IANA time zone.");
+}, "Verwende eine gültige IANA-Zeitzone.");
 
 const eventTypeObject = z.object({
   name: z.string().trim().min(2).max(100),
@@ -35,13 +35,13 @@ const eventTypeObject = z.object({
 });
 export const eventTypeInput = eventTypeObject.superRefine((value, context) => {
   if (value.durations && value.durations.filter((item) => item.isDefault).length !== 1) {
-    context.addIssue({ code: "custom", message: "Exactly one duration must be the default.", path: ["durations"] });
+    context.addIssue({ code: "custom", message: "Genau eine Dauer muss als Standard festgelegt sein.", path: ["durations"] });
   }
 });
 
 export const updateEventTypeInput = eventTypeObject.partial().superRefine((value, context) => {
   if (value.durations && value.durations.filter((item) => item.isDefault).length !== 1) {
-    context.addIssue({ code: "custom", message: "Exactly one duration must be the default.", path: ["durations"] });
+    context.addIssue({ code: "custom", message: "Genau eine Dauer muss als Standard festgelegt sein.", path: ["durations"] });
   }
 });
 
@@ -52,13 +52,13 @@ export const availabilityInput = z.object({
     dayOfWeek: z.number().int().min(0).max(6),
     startMinute: z.number().int().min(0).max(1439),
     endMinute: z.number().int().min(1).max(1440),
-  }).refine((value) => value.endMinute > value.startMinute, "End time must be after start time.")).max(50),
+  }).refine((value) => value.endMinute > value.startMinute, "Die Endzeit muss nach der Startzeit liegen.")).max(50),
   overrides: z.array(z.object({
     id: z.string().optional(), dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), isAvailable: z.boolean(),
     startMinute: z.number().int().min(0).max(1439).nullable().optional(), endMinute: z.number().int().min(1).max(1440).nullable().optional(),
   }).superRefine((value, context) => {
     if (value.isAvailable && (value.startMinute == null || value.endMinute == null || value.endMinute <= value.startMinute)) {
-      context.addIssue({ code: "custom", message: "Available overrides need a valid start and end.", path: ["startMinute"] });
+      context.addIssue({ code: "custom", message: "Verfügbare Ausnahmen benötigen einen gültigen Start und ein gültiges Ende.", path: ["startMinute"] });
     }
   })).max(100).default([]),
 }).superRefine((value, context) => {
@@ -66,16 +66,16 @@ export const availabilityInput = z.object({
     const intervals = value.intervals.filter((item) => item.dayOfWeek === day).sort((a, b) => a.startMinute - b.startMinute);
     intervals.forEach((item, index) => {
       if (index > 0 && intervals[index - 1]!.endMinute > item.startMinute) {
-        context.addIssue({ code: "custom", message: "Availability intervals cannot overlap.", path: ["intervals"] });
+        context.addIssue({ code: "custom", message: "Verfügbarkeitszeiten dürfen sich nicht überschneiden.", path: ["intervals"] });
       }
     });
   }
   for (const dateKey of new Set(value.overrides.map((item) => item.dateKey))) {
     const dateRows = value.overrides.filter((item) => item.dateKey === dateKey);
-    if (dateRows.some((item) => !item.isAvailable) && dateRows.some((item) => item.isAvailable)) context.addIssue({ code: "custom", message: "A full-day unavailable override cannot be combined with available hours.", path: ["overrides"] });
+    if (dateRows.some((item) => !item.isAvailable) && dateRows.some((item) => item.isAvailable)) context.addIssue({ code: "custom", message: "Eine ganztägig nicht verfügbare Ausnahme kann nicht mit verfügbaren Zeiten kombiniert werden.", path: ["overrides"] });
     const intervals = dateRows.filter((item) => item.isAvailable).sort((a, b) => (a.startMinute ?? 0) - (b.startMinute ?? 0));
     intervals.forEach((item, index) => {
-      if (index > 0 && (intervals[index - 1]!.endMinute ?? 0) > (item.startMinute ?? 0)) context.addIssue({ code: "custom", message: "Availability overrides cannot overlap.", path: ["overrides"] });
+      if (index > 0 && (intervals[index - 1]!.endMinute ?? 0) > (item.startMinute ?? 0)) context.addIssue({ code: "custom", message: "Verfügbarkeits-Ausnahmen dürfen sich nicht überschneiden.", path: ["overrides"] });
     });
   }
 });
@@ -91,7 +91,7 @@ export const bookingInput = z.object({
 });
 
 export const demoLoginInput = z.object({ email: z.email().transform((value) => value.toLowerCase()), password: z.string().min(1).max(200) });
-const strongPassword = z.string().min(12).max(200).refine((value) => /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value), "Use upper, lower, number, and symbol.");
+const strongPassword = z.string().min(12).max(200).refine((value) => /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value), "Verwende Groß- und Kleinbuchstaben, eine Zahl und ein Sonderzeichen.");
 export const registrationInput = z.object({
   name: z.string().trim().min(2).max(100), email: z.email().transform((value) => value.trim().toLowerCase()),
   password: strongPassword, workspaceName: z.string().trim().min(2).max(100), timeZone,

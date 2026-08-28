@@ -9,6 +9,6 @@ export class AppError extends Error {
   }
 }
 
-export const notFound = (resource: string) => new AppError("NOT_FOUND", `${resource} was not found.`, 404);
-export const unauthorized = () => new AppError("UNAUTHORIZED", "Sign in to continue.", 401);
+export const notFound = (resource: string) => new AppError("NOT_FOUND", `${resource} wurde nicht gefunden.`, 404);
+export const unauthorized = () => new AppError("UNAUTHORIZED", "Bitte melde dich an, um fortzufahren.", 401);
 export const conflict = (message: string) => new AppError("CONFLICT", message, 409);

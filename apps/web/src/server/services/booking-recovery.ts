@@ -24,7 +24,7 @@ export async function requestBookingManageLink(bookingId: string, emailInput: st
     await tx.$executeRaw`INSERT INTO "BookingRecoveryToken" ("id","workspaceId","bookingId","email","tokenHash","expiresAt","createdAt")
       SELECT ${tokenId},b."workspaceId",b."id",lower(b."inviteeEmail"),${authority.tokenHash},${expiresAt},${now} FROM "Booking" b
       WHERE b."id"=${bookingId} AND b."workspaceId"=${workspaceId} AND lower(b."inviteeEmail")=${email} AND b."status" IN ('CONFIRMED','PENDING_PAYMENT')`; observeWork("TOKEN_INSERT");
-    const outboxId = randomBytes(18).toString("base64url"); const idempotencyKey = `email:booking-recovery:${tokenId}`; const payloadJson = JSON.stringify({ recoveryTokenId: tokenId }); const subject = `Manage ${booking?.eventTitleSnapshot || "your booking"}`;
+    const outboxId = randomBytes(18).toString("base64url"); const idempotencyKey = `email:booking-recovery:${tokenId}`; const payloadJson = JSON.stringify({ recoveryTokenId: tokenId }); const subject = `${booking?.eventTitleSnapshot || "Deine Buchung"} verwalten`;
     await tx.$executeRaw`INSERT INTO "EmailOutbox" ("id","workspaceId","bookingId","kind","recipientEmail","subjectSnapshot","payloadJson","idempotencyKey","nextAttemptAt","createdAt","updatedAt")
       SELECT ${outboxId},r."workspaceId",r."bookingId",'BOOKING_RECOVERY',r."email",${subject},${payloadJson},${idempotencyKey},${now},${now},${now}
       FROM "BookingRecoveryToken" r WHERE r."id"=${tokenId} AND r."tokenHash"=${authority.tokenHash}`; observeWork("OUTBOX_INSERT");
@@ -32,7 +32,7 @@ export async function requestBookingManageLink(bookingId: string, emailInput: st
   return { accepted: true as const };
 }
 
-function invalidRecovery() { return new AppError("INVALID_OR_EXPIRED_TOKEN", "This manage link is invalid or expired.", 400); }
+function invalidRecovery() { return new AppError("INVALID_OR_EXPIRED_TOKEN", "Dieser Verwaltungslink ist ungültig oder abgelaufen.", 400); }
 export async function consumeBookingManageLink(token: string, now = new Date()) {
   const id = actionTokenId(token); if (!id) throw invalidRecovery(); let bookingId = ""; let sessionToken = ""; let expiresAt = now;
   enterCapabilityDatabaseContext(id, undefined, undefined, "booking_recovery_resolve");

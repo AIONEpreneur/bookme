@@ -18,16 +18,16 @@ export interface PaymentService {
 
 export class StubPaymentService implements PaymentService {
   async createCheckout(booking?: Booking) {
-    if (booking?.priceCents && booking.priceCents > 0) throw new AppError("PAYMENTS_NOT_CONFIGURED", "Payments are not configured for this event type.", 503);
+    if (booking?.priceCents && booking.priceCents > 0) throw new AppError("PAYMENTS_NOT_CONFIGURED", "Zahlungen sind für diese Terminart nicht konfiguriert.", 503);
     return null;
   }
   async expireCheckout() {}
-  async refundPayment(): Promise<RefundResult> { throw new AppError("PAYMENTS_NOT_CONFIGURED", "Payments are not configured for this refund.", 503); }
+  async refundPayment(): Promise<RefundResult> { throw new AppError("PAYMENTS_NOT_CONFIGURED", "Zahlungen sind für diese Rückerstattung nicht konfiguriert.", 503); }
 }
 
 export function assertPaidBookingsConfigured() {
   if (!stripeTestConfigurationReady()) {
-    throw new AppError("PAYMENTS_NOT_CONFIGURED", "Stripe test mode must be configured before publishing a paid event type.", 503);
+    throw new AppError("PAYMENTS_NOT_CONFIGURED", "Der Stripe-Testmodus muss konfiguriert sein, bevor eine kostenpflichtige Terminart veröffentlicht werden kann.", 503);
   }
 }
 

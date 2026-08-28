@@ -53,28 +53,28 @@ async function main() {
       workspaceId: workspace.id, ownerId: host.id,
       name: "Strategy Call",
       slug: "strategy-call",
-      description: "A focused conversation about your next best move.",
+      description: "Ein fokussiertes Gespräch über deinen nächsten besten Schritt.",
       durationMinutes: 30,
       color: "#2563EB",
       locationType: "CUSTOM",
-      locationValue: "Organizer will share meeting details",
+      locationValue: "Deine Gastgeber:in teilt die Meeting-Details mit dir",
     },
   });
   if (!await prisma.eventDuration.count({ where: { eventTypeId: eventType.id } })) {
     await prisma.eventDuration.createMany({ data: [
-      { eventTypeId: eventType.id, label: "30 minutes", durationMinutes: 30, isDefault: true, priceCents: 0, currency: "usd", position: 0 },
-      { eventTypeId: eventType.id, label: "60 minutes", durationMinutes: 60, isDefault: false, priceCents: 0, currency: "usd", position: 1 },
+      { eventTypeId: eventType.id, label: "30 Minuten", durationMinutes: 30, isDefault: true, priceCents: 0, currency: "usd", position: 0 },
+      { eventTypeId: eventType.id, label: "60 Minuten", durationMinutes: 60, isDefault: false, priceCents: 0, currency: "usd", position: 1 },
     ] });
   }
   if (!await prisma.customQuestion.count({ where: { eventTypeId: eventType.id } })) {
-    await prisma.customQuestion.create({ data: { eventTypeId: eventType.id, label: "What would make this call valuable?", kind: "TEXT", required: false, position: 0 } });
+    await prisma.customQuestion.create({ data: { eventTypeId: eventType.id, label: "Was würde diesen Call für dich wertvoll machen?", kind: "TEXT", required: false, position: 0 } });
   }
 
   const paidSession = await prisma.eventType.upsert({
     where: { slug: "paid-strategy-session" },
     update: {
-      name: "Revenue Strategy Session",
-      description: "A focused working session for solo experts building a more reliable offer and booking flow.",
+      name: "Umsatz-Strategie-Session",
+      description: "Eine fokussierte Arbeitssession für Solo-Expert:innen, die ein verlässlicheres Angebot und einen besseren Buchungsablauf aufbauen.",
       locationType: "GOOGLE_MEET",
       minimumNoticeMinutes: 120,
       bookingWindowDays: 30,
@@ -83,9 +83,9 @@ async function main() {
     create: {
       workspaceId: workspace.id,
       ownerId: host.id,
-      name: "Revenue Strategy Session",
+      name: "Umsatz-Strategie-Session",
       slug: "paid-strategy-session",
-      description: "A focused working session for solo experts building a more reliable offer and booking flow.",
+      description: "Eine fokussierte Arbeitssession für Solo-Expert:innen, die ein verlässlicheres Angebot und einen besseren Buchungsablauf aufbauen.",
       durationMinutes: 60,
       color: "#2563EB",
       locationType: "GOOGLE_MEET",
@@ -93,22 +93,22 @@ async function main() {
       bookingWindowDays: 30,
     },
   });
-  const paidDuration = await prisma.eventDuration.findFirst({ where: { eventTypeId: paidSession.id, label: "60 minutes" } });
+  const paidDuration = await prisma.eventDuration.findFirst({ where: { eventTypeId: paidSession.id, label: { in: ["60 Minuten", "60 minutes"] } } });
   if (paidDuration) {
-    await prisma.eventDuration.update({ where: { id: paidDuration.id }, data: { durationMinutes: 60, isDefault: true, priceCents: 14900, currency: "usd", position: 0, isActive: true } });
+    await prisma.eventDuration.update({ where: { id: paidDuration.id }, data: { label: "60 Minuten", durationMinutes: 60, isDefault: true, priceCents: 14900, currency: "usd", position: 0, isActive: true } });
   } else {
-    await prisma.eventDuration.create({ data: { eventTypeId: paidSession.id, label: "60 minutes", durationMinutes: 60, isDefault: true, priceCents: 14900, currency: "usd", position: 0 } });
+    await prisma.eventDuration.create({ data: { eventTypeId: paidSession.id, label: "60 Minuten", durationMinutes: 60, isDefault: true, priceCents: 14900, currency: "usd", position: 0 } });
   }
   if (!await prisma.customQuestion.count({ where: { eventTypeId: paidSession.id } })) {
     await prisma.customQuestion.createMany({ data: [
-      { eventTypeId: paidSession.id, label: "What outcome would make this session valuable?", kind: "TEXTAREA", required: true, position: 0 },
-      { eventTypeId: paidSession.id, label: "What do you currently use for booking and payment?", kind: "TEXT", required: false, position: 1 },
+      { eventTypeId: paidSession.id, label: "Welches Ergebnis würde diese Session für dich wertvoll machen?", kind: "TEXTAREA", required: true, position: 0 },
+      { eventTypeId: paidSession.id, label: "Was nutzt du aktuell für Buchung und Bezahlung?", kind: "TEXT", required: false, position: 1 },
     ] });
   }
   await prisma.workspaceBranding.upsert({
     where: { workspaceId: workspace.id },
     update: {},
-    create: { workspaceId: workspace.id, userId: host.id, workspaceName: "Uppity AI", accentColor: "#2563EB", description: "Book a focused conversation with Nate." },
+    create: { workspaceId: workspace.id, userId: host.id, workspaceName: "Uppity AI", accentColor: "#2563EB", description: "Buche ein fokussiertes Gespräch mit Nate." },
   });
 }
 

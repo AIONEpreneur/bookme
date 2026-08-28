@@ -56,7 +56,7 @@ describe("paid booking cancellation recovery", () => {
       status: "PENDING_PAYMENT", stripePaymentStatus: "checkout_retry", checkoutResumeExpiresAt: new Date("2020-01-01T00:00:00Z"), capabilityVersion: randomUUID(), manageExpiresAt: new Date("2099-09-02T00:00:00Z"),
     } });
     const payments: PaymentService = { async createCheckout() { calls += 1; return null; }, async expireCheckout() {}, async refundPayment() { throw new Error("not used"); } };
-    await expect(resumeBookingCheckout(bookingId, payments)).rejects.toThrow(/can no longer be resumed/); expect(calls).toBe(0);
+    await expect(resumeBookingCheckout(bookingId, payments)).rejects.toThrow(/nicht mehr fortgesetzt/); expect(calls).toBe(0);
     await db.booking.delete({ where: { id: bookingId } });
   });
 
@@ -71,7 +71,7 @@ describe("paid booking cancellation recovery", () => {
     await expect(cancelBooking(bookingId, "Customer requested cancellation")).resolves.toMatchObject({ status: "CANCELLED", refundStatus: "REFUND_PENDING", refundedAmountCents: 0 });
     expect(await db.integrationOutbox.findUnique({ where: { idempotencyKey: `stripe:refund:${bookingId}:full:v1` } })).toMatchObject({ kind: "STRIPE_REFUND", status: "RETRY" });
     const email = await db.emailOutbox.findFirstOrThrow({ where: { bookingId, kind: "BOOKING_CANCELLED", recipientEmail: "paid-cancellation@example.invalid" } });
-    expect(JSON.parse(email.payloadJson)).toMatchObject({ paymentTruth: "Paid; refund pending", priceCents: 2500, currency: "usd" });
+    expect(JSON.parse(email.payloadJson)).toMatchObject({ paymentTruth: "Bezahlt; Rückerstattung ausstehend", priceCents: 2500, currency: "usd" });
     await db.booking.delete({ where: { id: bookingId } });
   });
 
@@ -88,7 +88,7 @@ describe("paid booking cancellation recovery", () => {
       async getBusyIntervals() { if (!canceled) { canceled = true; await cancelBooking(bookingId, "Concurrent cancellation"); } return []; },
       async createBookingEvent() { return null; }, async updateBookingEvent() {}, async deleteBookingEvent() {},
     };
-    await expect(rescheduleBooking(bookingId, "2099-08-24T15:00:00.000Z", calendar)).rejects.toThrow(/changed while rescheduling/);
+    await expect(rescheduleBooking(bookingId, "2099-08-24T15:00:00.000Z", calendar)).rejects.toThrow(/während der Terminverschiebung geändert/);
     expect(await db.booking.findUniqueOrThrow({ where: { id: bookingId } })).toMatchObject({ status: "CANCELLED", mutationVersion: 1 });
     expect(await db.bookingOccupancy.count({ where: { bookingId } })).toBe(0);
     await db.booking.delete({ where: { id: bookingId } });
@@ -123,7 +123,7 @@ describe("paid booking cancellation recovery", () => {
       inviteeName: "Lease Fence", inviteeEmail: "lease-fence@example.com", inviteeTimeZone: "UTC", startAt: new Date("2099-08-06T00:00:00Z"), endAt: new Date("2099-08-06T00:30:00Z"), status: "CONFIRMED",
       idempotencyKey: randomUUID(), requestFingerprint: randomUUID(), capabilityVersion: randomUUID(), manageExpiresAt: new Date("2099-09-06T00:00:00Z"), calendarLeaseToken: "active-provider-call", calendarLeaseExpiresAt: new Date("2099-08-01T00:00:00Z"),
     } });
-    await expect(cancelBooking(bookingId, "must wait")).rejects.toThrow(/changed while cancellation/);
+    await expect(cancelBooking(bookingId, "must wait")).rejects.toThrow(/während der Stornierung geändert/);
     expect(await db.booking.findUniqueOrThrow({ where: { id: bookingId } })).toMatchObject({ status: "CONFIRMED", calendarLeaseToken: "active-provider-call" });
     await db.booking.delete({ where: { id: bookingId } });
   });

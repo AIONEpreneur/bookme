@@ -27,20 +27,20 @@ export async function listBookings(workspaceId: string) {
 
 export async function getBookingForHost(workspaceId: string, id: string) {
   const booking = await db.booking.findFirst({ where: { id, workspaceId }, include: bookingInclude });
-  if (!booking) throw notFound("Booking");
+  if (!booking) throw notFound("Buchung");
   return mapBooking(booking);
 }
 
 export async function getBookingDetail(id: string) {
   const booking = await db.booking.findUnique({ where: { id }, include: bookingInclude });
-  if (!booking) throw notFound("Booking");
+  if (!booking) throw notFound("Buchung");
   return mapBooking(booking);
 }
 
 export async function listManageRescheduleSlots(id: string, from: Date, to: Date, outputTimeZone: string, durationId?: string, calendar: CalendarService = getCalendarService()) {
   const booking = await db.booking.findUnique({ where: { id }, include: { eventType: { select: { slug: true } } } });
-  if (!booking || booking.status !== "CONFIRMED") throw notFound("Booking");
-  if (booking.calendarProviderSnapshot === "provider_recovery_required") throw new AppError("CALENDAR_PROVIDER_RECOVERY_REQUIRED", "Reconcile this upgraded booking's calendar provider before rescheduling.", 503);
+  if (!booking || booking.status !== "CONFIRMED") throw notFound("Buchung");
+  if (booking.calendarProviderSnapshot === "provider_recovery_required") throw new AppError("CALENDAR_PROVIDER_RECOVERY_REQUIRED", "Der Kalender-Provider dieser Buchung muss abgeglichen werden, bevor sie verschoben werden kann.", 503);
   const providerEventId = booking.externalCalendarEventId ?? (booking.calendarProviderSnapshot === "google" ? providerCalendarEventId(booking.id) : undefined);
   const slots = await listPublicSlots(booking.eventType.slug, from, to, outputTimeZone, calendar, durationId ?? booking.durationId ?? undefined, id, true, true, providerEventId, booking.bookingWindowDays, booking.durationMinutes, booking.bufferBeforeMinutes, booking.bufferAfterMinutes, booking.calendarProviderSnapshot === "google" ? "google" : "local");
   return slots.filter((slot) => new Date(slot.start).getTime() !== booking.startAt.getTime());
@@ -50,7 +50,7 @@ export async function listPublicSlots(slug: string, from: Date, to: Date, output
   const eventType = await getEventTypeForSlotsBySlug(slug, !allowInactiveEvent);
   const duration = (durationId ? eventType.durations.find((item) => item.id === durationId) : eventType.durations.find((item) => item.isDefault))
     ?? (durationId && allowInactiveDuration ? await db.eventDuration.findFirst({ where: { id: durationId, eventTypeId: eventType.id } }) : null);
-  if (!duration) throw notFound("Duration option");
+  if (!duration) throw notFound("Dauer-Option");
   const effectiveBufferBefore = bufferBeforeOverride ?? eventType.bufferBeforeMinutes; const effectiveBufferAfter = bufferAfterOverride ?? eventType.bufferAfterMinutes;
   const providerFrom = DateTime.fromJSDate(from).minus({ minutes: effectiveBufferBefore }).toJSDate();
   const providerTo = DateTime.fromJSDate(to).plus({ minutes: effectiveBufferAfter }).toJSDate();
@@ -97,7 +97,7 @@ export function occupiedMinutes(start: Date, end: Date, beforeMinutes: number, a
 async function priorResult(slug: string, idempotencyKey: string, requestFingerprint: string): Promise<InternalCreateBookingResult | null> {
   const prior = await db.booking.findFirst({ where: { idempotencyKey, eventType: { slug } }, include: bookingInclude });
   if (!prior) return null;
-  if (prior.requestFingerprint !== requestFingerprint) throw conflict("That idempotency key was already used for a different booking request.");
+  if (prior.requestFingerprint !== requestFingerprint) throw conflict("Dieser Idempotency-Key wurde bereits für eine andere Buchungsanfrage verwendet.");
   const activeCapabilities = await db.bookingCapability.count({ where: { bookingId: prior.id, revokedAt: null, expiresAt: { gt: new Date() } } });
   return { booking: mapBooking(prior), checkoutUrl: prior.stripeCheckoutUrl, checkoutState: prior.priceCents === 0 ? "NOT_REQUIRED" : prior.stripeCheckoutUrl ? "READY" : "RETRY_REQUIRED", manageCapabilities: activeCapabilities === 3 ? materializeCapabilities(prior.id, prior.capabilityVersion, prior.manageExpiresAt, prior.capabilityKeyId) : null };
 }
@@ -133,24 +133,24 @@ export async function createBooking(
     return prior;
   }
   const duration = input.durationId ? eventType.durations.find((item) => item.id === input.durationId) : eventType.durations.find((item) => item.isDefault);
-  if (!duration) throw notFound("Duration option");
+  if (!duration) throw notFound("Dauer-Option");
   const answerMap = new Map((input.answers ?? []).map((answer) => [answer.questionId, answer.value]));
   for (const question of eventType.questions) {
     const value = answerMap.get(question.id);
-    if (question.required && (!answerMap.has(question.id) || value == null || value === "")) throw conflict(`Answer required: ${question.label}`);
+    if (question.required && (!answerMap.has(question.id) || value == null || value === "")) throw conflict(`Antwort erforderlich: ${question.label}`);
     if (!answerMap.has(question.id)) continue;
     const serialized = JSON.stringify(value);
-    if (!serialized || Buffer.byteLength(serialized, "utf8") > 4000) throw conflict(`Answer is invalid: ${question.label}`);
-    if (question.kind === "CHECKBOX" && typeof value !== "boolean") throw conflict(`Answer must be checked or unchecked: ${question.label}`);
-    if (question.kind === "SELECT" && (typeof value !== "string" || !((question.optionsJson ? JSON.parse(question.optionsJson) as string[] : []).includes(value)))) throw conflict(`Choose a valid option: ${question.label}`);
+    if (!serialized || Buffer.byteLength(serialized, "utf8") > 4000) throw conflict(`Antwort ist ungültig: ${question.label}`);
+    if (question.kind === "CHECKBOX" && typeof value !== "boolean") throw conflict(`Antwort muss angekreuzt oder nicht angekreuzt sein: ${question.label}`);
+    if (question.kind === "SELECT" && (typeof value !== "string" || !((question.optionsJson ? JSON.parse(question.optionsJson) as string[] : []).includes(value)))) throw conflict(`Wähle eine gültige Option: ${question.label}`);
   }
-  if ([...answerMap.keys()].some((id) => !eventType.questions.some((question) => question.id === id))) throw conflict("A booking answer does not belong to this event type.");
+  if ([...answerMap.keys()].some((id) => !eventType.questions.some((question) => question.id === id))) throw conflict("Eine Buchungsantwort gehört nicht zu dieser Terminart.");
   const requestedStart = new Date(input.startAt);
   const requestedEnd = DateTime.fromJSDate(requestedStart).plus({ minutes: duration.durationMinutes }).toJSDate();
   const windowStart = DateTime.fromJSDate(requestedStart).startOf("day").minus({ hours: 14 }).toJSDate();
   const windowEnd = DateTime.fromJSDate(requestedStart).endOf("day").plus({ hours: 14 }).toJSDate();
   const slots = await withDatabaseTransactionRetry(() => listPublicSlots(slug, windowStart, windowEnd, input.inviteeTimeZone, calendar, duration.id));
-  if (!slots.some((slot) => new Date(slot.start).getTime() === requestedStart.getTime())) throw conflict("That time is no longer available.");
+  if (!slots.some((slot) => new Date(slot.start).getTime() === requestedStart.getTime())) throw conflict("Dieser Termin ist leider nicht mehr verfügbar.");
   enterPublicBookingDatabaseContext(eventType.id, eventType.workspaceId, idempotencyKey);
   const capability = newCapabilityIdentity(requestedEnd);
   const calendarProviderSnapshot = await calendar.providerKind?.(eventType.ownerId, eventType.workspaceId) ?? "local";
@@ -187,7 +187,7 @@ export async function createBooking(
     if (providerErrorCode(error) === "P2002") {
       const winner = await withDatabaseTransactionRetry(() => priorResult(slug, idempotencyKey, requestFingerprint));
       if (winner) return winner;
-      throw conflict("That time was just booked. Choose another slot.");
+      throw conflict("Dieser Termin wurde gerade gebucht. Bitte wähle einen anderen Zeitpunkt.");
     }
     throw error;
   }
@@ -206,9 +206,9 @@ export async function createBooking(
 
 export async function resumeBookingCheckout(id: string, payments: PaymentService = getPaymentService()): Promise<ResumeBookingCheckoutResult> {
   const booking = await db.booking.findUnique({ where: { id } });
-  if (!booking) throw notFound("Booking");
+  if (!booking) throw notFound("Buchung");
   if (booking.status !== "PENDING_PAYMENT" || booking.priceCents <= 0) return { bookingId: booking.id, status: booking.status as ResumeBookingCheckoutResult["status"], checkoutState: "NOT_REQUIRED", checkoutUrl: null };
-  if (!booking.checkoutResumeExpiresAt || booking.checkoutResumeExpiresAt.getTime() - Date.now() < 30 * 60_000) throw new AppError("CHECKOUT_RESUME_EXPIRED", "This payment attempt can no longer be resumed. Cancel it or create a new booking.", 409);
+  if (!booking.checkoutResumeExpiresAt || booking.checkoutResumeExpiresAt.getTime() - Date.now() < 30 * 60_000) throw new AppError("CHECKOUT_RESUME_EXPIRED", "Dieser Zahlungsversuch kann nicht mehr fortgesetzt werden. Storniere ihn oder erstelle eine neue Buchung.", 409);
   if (booking.stripeCheckoutUrl) return { bookingId: booking.id, status: "PENDING_PAYMENT", checkoutState: "READY", checkoutUrl: booking.stripeCheckoutUrl };
   try {
     const checkoutUrl = await ensureCheckoutLinked(booking.id, payments);
@@ -220,12 +220,12 @@ export async function resumeBookingCheckout(id: string, payments: PaymentService
 export async function cancelBooking(id: string, cancellationReason?: string) {
   enterDatabaseAction("booking_write");
   const current = await db.booking.findUnique({ where: { id }, include: bookingInclude });
-  if (!current) throw notFound("Booking");
+  if (!current) throw notFound("Buchung");
   if (current.status === "CANCELLED") return mapBooking(current);
   const updated = await db.$transaction(async (tx) => {
     const mutationNow = new Date();
     const won = await tx.booking.updateMany({ where: { id, mutationVersion: current.mutationVersion, status: { not: "CANCELLED" }, OR: [{ calendarLeaseToken: null }, { calendarLeaseExpiresAt: { lte: mutationNow } }] }, data: { status: "CANCELLED", mutationVersion: { increment: 1 }, calendarLeaseToken: null, calendarLeaseExpiresAt: null, cancellationReason: cancellationReason?.trim() || "INVITEE_CANCELLED", calendarSyncStatus: "PENDING", notificationStatus: "PENDING" } });
-    if (won.count !== 1) throw conflict("The booking changed while cancellation was being applied. Refresh and try again.");
+    if (won.count !== 1) throw conflict("Die Buchung hat sich während der Stornierung geändert. Bitte lade die Seite neu und versuche es erneut.");
     await tx.bookingOccupancy.deleteMany({ where: { bookingId: id } });
     await tx.bookingCapability.updateMany({ where: { bookingId: id, scope: { in: ["cancel", "reschedule"] }, revokedAt: null }, data: { revokedAt: new Date() } });
     await tx.bookingManageSession.updateMany({ where: { bookingId: id, revokedAt: null }, data: { scopes: "read" } });
@@ -247,8 +247,8 @@ export async function rescheduleBooking(id: string, startAt: string, calendar: C
   enterDatabaseAction("booking_write");
   const mutationContext = currentDatabaseContext();
   const booking = await db.booking.findUnique({ where: { id }, include: { eventType: { include: { durations: true, questions: true } }, host: true } });
-  if (!booking || booking.status !== "CONFIRMED") throw notFound("Booking");
-  if (booking.calendarProviderSnapshot === "provider_recovery_required") throw new AppError("CALENDAR_PROVIDER_RECOVERY_REQUIRED", "Reconcile this upgraded booking's calendar provider before rescheduling.", 503);
+  if (!booking || booking.status !== "CONFIRMED") throw notFound("Buchung");
+  if (booking.calendarProviderSnapshot === "provider_recovery_required") throw new AppError("CALENDAR_PROVIDER_RECOVERY_REQUIRED", "Der Kalender-Provider dieser Buchung muss abgeglichen werden, bevor sie verschoben werden kann.", 503);
   const requestedStart = new Date(startAt);
   if (requestedStart.getTime() === booking.startAt.getTime()) return mapBooking(await db.booking.findUniqueOrThrow({ where: { id }, include: bookingInclude }));
   const requestedEnd = DateTime.fromJSDate(requestedStart).plus({ minutes: booking.durationMinutes }).toJSDate();
@@ -257,14 +257,14 @@ export async function rescheduleBooking(id: string, startAt: string, calendar: C
   const rangeEnd = DateTime.fromJSDate(requestedStart).endOf("day").plus({ hours: 14 }).toJSDate();
   const providerEventId = booking.externalCalendarEventId ?? (booking.calendarProviderSnapshot === "google" ? providerCalendarEventId(booking.id) : undefined);
   const slots = await listPublicSlots(booking.eventType.slug, rangeStart, rangeEnd, booking.inviteeTimeZone, calendar, booking.durationId ?? undefined, id, true, true, providerEventId, booking.bookingWindowDays, booking.durationMinutes, booking.bufferBeforeMinutes, booking.bufferAfterMinutes, booking.calendarProviderSnapshot === "google" ? "google" : "local");
-  if (!slots.some((slot) => new Date(slot.start).getTime() === requestedStart.getTime())) throw conflict("That time is no longer available.");
+  if (!slots.some((slot) => new Date(slot.start).getTime() === requestedStart.getTime())) throw conflict("Dieser Termin ist leider nicht mehr verfügbar.");
   if (mutationContext) enterDatabaseContext({ ...mutationContext, action: "booking_write" });
   let updated;
   try {
     updated = await db.$transaction(async (tx) => {
       const mutationNow = new Date();
       const won = await tx.booking.updateMany({ where: { id, mutationVersion: booking.mutationVersion, status: "CONFIRMED", OR: [{ calendarLeaseToken: null }, { calendarLeaseExpiresAt: { lte: mutationNow } }] }, data: { startAt: requestedStart, endAt: requestedEnd, manageExpiresAt: renewedManageExpiry, mutationVersion: { increment: 1 }, calendarLeaseToken: null, calendarLeaseExpiresAt: null, calendarSyncStatus: "PENDING", notificationStatus: "PENDING" } });
-      if (won.count !== 1) throw conflict("The booking changed while rescheduling. Refresh and choose a new time.");
+      if (won.count !== 1) throw conflict("Die Buchung hat sich während der Terminverschiebung geändert. Bitte lade die Seite neu und wähle eine neue Zeit.");
       await tx.bookingOccupancy.deleteMany({ where: { bookingId: id } });
       await tx.bookingOccupancy.createMany({ data: occupiedMinutes(requestedStart, requestedEnd, booking.bufferBeforeMinutes, booking.bufferAfterMinutes).map((minuteStart) => ({ workspaceId: booking.workspaceId, bookingId: id, hostId: booking.hostId, minuteStart })) });
       await tx.bookingManageSession.updateMany({ where: { bookingId: id, revokedAt: null }, data: { expiresAt: renewedManageExpiry } });
@@ -273,7 +273,7 @@ export async function rescheduleBooking(id: string, startAt: string, calendar: C
       await enqueueBookingEmail(tx, result, "BOOKING_RESCHEDULED", mutationNow); return result;
     });
   } catch (error) {
-    if (providerErrorCode(error) === "P2002") throw conflict("That time was just booked. Choose another slot.");
+    if (providerErrorCode(error) === "P2002") throw conflict("Dieser Termin wurde gerade gebucht. Bitte wähle einen anderen Zeitpunkt.");
     throw error;
   }
   if (shouldDrainOutboxInline()) await processBookingOutbox(id);

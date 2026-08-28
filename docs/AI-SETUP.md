@@ -1,54 +1,54 @@
-# Set up SnagTime with Codex or Claude Code
+# SnagTime mit Codex oder Claude Code einrichten
 
-This guide lets an AI coding assistant perform the technical setup while you retain control of accounts, credentials, billing, and deployment decisions.
+Mit dieser Anleitung übernimmt ein KI-Coding-Assistent die technische Einrichtung, während du die Kontrolle über Konten, Zugangsdaten, Zahlungen und Deployment-Entscheidungen behältst.
 
-Start with the free local demo. It needs no Google, Stripe, SMTP, hosting, or PostgreSQL credentials. Add integrations only after the local booking journey works.
+Starte mit der kostenlosen lokalen Demo. Sie braucht keine Zugangsdaten für Google, Stripe, SMTP, Hosting oder PostgreSQL. Füge Integrationen erst hinzu, wenn der lokale Buchungsablauf funktioniert.
 
-## Copy this prompt
+## Diesen Prompt kopieren
 
-Paste the following prompt into Codex or Claude Code. If the assistant is not already inside a clone of the repository, include `https://github.com/nateherkai/snagtime` with the prompt.
+Füge den folgenden Prompt in Codex oder Claude Code ein. Falls der Assistent nicht bereits in einem Klon des Repositories arbeitet, gib `https://github.com/aionepreneur/bookme` mit dem Prompt an.
 
 ```text
-Set up SnagTime for me from https://github.com/nateherkai/snagtime.
+Richte SnagTime für mich ein, aus https://github.com/aionepreneur/bookme.
 
-Read README.md, docs/AI-SETUP.md, docs/INTEGRATION-SETUP.md, docs/DEPLOYMENT.md, and SECURITY.md before making changes.
+Lies README.md, docs/AI-SETUP.md, docs/INTEGRATION-SETUP.md, docs/DEPLOYMENT.md und SECURITY.md, bevor du Änderungen machst.
 
-Begin with the credential-free local demo. Confirm that Git, Node.js 20.9 or newer, and npm are available. Clone the repository if needed, run the supported setup flow, validate it with npm run setup:check, prepare the SQLite database, and start the app. Tell me the local URL and where the generated login was shown. Verify that the health endpoint and sign-in page load.
+Beginne mit der lokalen Demo ohne Zugangsdaten. Prüfe, ob Git, Node.js 20.9 oder neuer und npm verfügbar sind. Klone das Repository falls nötig, führe den unterstützten Setup-Ablauf aus, validiere ihn mit npm run setup:check, bereite die SQLite-Datenbank vor und starte die App. Nenne mir die lokale URL und wo die generierten Zugangsdaten angezeigt wurden. Prüfe, dass der Health-Endpunkt und die Anmeldeseite laden.
 
-Security rules:
-- Never print, summarize, transmit, or commit .env.local or any credential value.
-- Never ask me to paste secrets into chat. Tell me the exact environment variable name and let me enter the value directly into .env.local or my host's secret manager.
-- Never invent provider credentials or weaken validation to make setup pass.
-- Never enable Stripe live mode. This release supports Stripe test mode only.
-- Never run database reset, delete data, expose the app publicly, purchase a service, or create cloud resources without my explicit approval.
+Sicherheitsregeln:
+- Gib niemals .env.local oder irgendeinen Credential-Wert aus, fasse ihn nicht zusammen, übertrage ihn nicht und committe ihn nicht.
+- Bitte mich niemals, Secrets in den Chat einzufügen. Nenne mir den exakten Namen der Umgebungsvariable und lass mich den Wert direkt in .env.local oder den Secret-Manager meines Hosters eintragen.
+- Erfinde niemals Anbieter-Zugangsdaten und schwäche niemals Validierungen ab, damit das Setup durchläuft.
+- Aktiviere niemals den Stripe-Live-Modus. Diese Version unterstützt ausschließlich den Stripe-Testmodus.
+- Führe niemals einen Datenbank-Reset aus, lösche keine Daten, mache die App nicht öffentlich zugänglich, kaufe keinen Dienst und lege keine Cloud-Ressourcen an, ohne meine ausdrückliche Zustimmung.
 
-After the free local demo works, ask which optional step I want: Google Calendar, SMTP email, Stripe test payments, or public deployment. Handle only the option I select.
+Wenn die kostenlose lokale Demo läuft, frage mich, welchen optionalen Schritt ich möchte: Google Calendar, SMTP-E-Mail, Stripe-Testzahlungen oder öffentliches Deployment. Kümmere dich nur um die Option, die ich auswähle.
 
-When a provider requires a human action, pause and give me:
-1. The provider page I need to open.
-2. The exact setting or credential I need to create.
-3. The exact callback or webhook URL to enter.
-4. The environment variable name where the value belongs.
-5. A safe verification step that does not reveal the value.
+Wenn ein Anbieter eine menschliche Aktion erfordert, halte an und gib mir:
+1. Die Anbieter-Seite, die ich öffnen muss.
+2. Die exakte Einstellung oder das Credential, das ich anlegen muss.
+3. Die exakte Callback- oder Webhook-URL, die ich eintragen muss.
+4. Den Namen der Umgebungsvariable, in die der Wert gehört.
+5. Einen sicheren Prüfschritt, der den Wert nicht offenlegt.
 
-Wait for me to confirm each human checkpoint, then continue. At the end, report what works, what remains local-only, which integrations are enabled, and any ongoing hosting costs or operational responsibilities.
+Warte, bis ich jeden menschlichen Checkpoint bestätigt habe, und mach dann weiter. Berichte am Ende, was funktioniert, was nur lokal bleibt, welche Integrationen aktiv sind und welche laufenden Hosting-Kosten oder Betriebspflichten es gibt.
 ```
 
-## What the assistant should ask first
+## Was der Assistent zuerst fragen sollte
 
-The assistant needs only a few non-secret choices for the local setup:
+Der Assistent braucht für die lokale Einrichtung nur ein paar Entscheidungen ohne Secrets:
 
-1. Where should the repository be cloned?
-2. What organizer email should the local demo use?
-3. Should setup generate a strong demo password, or will you provide one directly at the terminal?
+1. Wohin soll das Repository geklont werden?
+2. Welche E-Mail-Adresse soll die Gastgeber:in in der lokalen Demo nutzen?
+3. Soll das Setup ein starkes Demo-Passwort generieren, oder gibst du selbst eins direkt im Terminal ein?
 
-The assistant should not request Google, Stripe, SMTP, database, or hosting credentials before the free local booking flow works.
+Der Assistent sollte keine Zugangsdaten für Google, Stripe, SMTP, Datenbank oder Hosting anfragen, bevor der kostenlose lokale Buchungsablauf funktioniert.
 
-## Local setup checkpoints
+## Checkpoints für die lokale Einrichtung
 
-### 1. Prerequisites
+### 1. Voraussetzungen
 
-The assistant should verify:
+Der Assistent sollte prüfen:
 
 ```bash
 git --version
@@ -56,90 +56,90 @@ node --version
 npm --version
 ```
 
-Node.js 24 is the verified runtime. Node.js 20.9 or newer is supported.
+Node.js 24 ist die verifizierte Laufzeitumgebung. Node.js 20.9 oder neuer wird unterstützt.
 
-### 2. Create the local configuration
+### 2. Lokale Konfiguration erstellen
 
-From the repository root:
+Im Hauptverzeichnis des Repositories:
 
 ```bash
 npm run setup -- --email you@example.com
 ```
 
-The command creates the ignored `.env.local`, generates independent application secrets, and prints the generated local password once. Save that password in your password manager.
+Der Befehl erstellt die von Git ignorierte `.env.local`, generiert unabhängige Anwendungs-Secrets und zeigt das generierte lokale Passwort einmalig an. Speichere dieses Passwort in deinem Passwort-Manager.
 
-If `.env.local` already exists, the assistant must preserve it. It must not use `--force` unless you explicitly approve replacing the file.
+Falls `.env.local` bereits existiert, muss der Assistent die Datei erhalten. Er darf `--force` nur verwenden, wenn du dem Ersetzen der Datei ausdrücklich zustimmst.
 
-### 3. Validate without revealing secrets
+### 3. Validieren, ohne Secrets offenzulegen
 
 ```bash
 npm run setup:check
 ```
 
-A successful result says the SnagTime free-demo preflight passed. The command validates required values and secret strength without printing configured values.
+Bei Erfolg meldet der Befehl, dass der SnagTime-Free-Demo-Preflight bestanden wurde. Er prüft die erforderlichen Werte und die Stärke der Secrets, ohne konfigurierte Werte auszugeben.
 
-### 4. Prepare and start the app
+### 4. App vorbereiten und starten
 
 ```bash
 npm run demo:free
 ```
 
-This installs dependencies, generates the SQLite client, applies migrations, seeds the organizer account, and starts SnagTime at [http://localhost:3000](http://localhost:3000).
+Das installiert die Abhängigkeiten, generiert den SQLite-Client, wendet Migrationen an, legt das Konto der Gastgeber:in an und startet SnagTime unter [http://localhost:3000](http://localhost:3000).
 
-The assistant should verify:
+Der Assistent sollte prüfen:
 
-- `http://localhost:3000/api/health/live` returns a successful response.
-- The sign-in page loads.
-- The generated organizer login works.
-- A public booking link can be created and opened.
+- `http://localhost:3000/api/health/live` antwortet erfolgreich.
+- Die Anmeldeseite lädt.
+- Die generierten Zugangsdaten der Gastgeber:in funktionieren.
+- Ein öffentlicher Buchungslink kann erstellt und geöffnet werden.
 
-The local inbox, local calendar adapter, and payment stub are intentional. They make the first setup free and credential-free.
+Der lokale Posteingang, der lokale Kalender-Adapter und der Zahlungs-Stub sind Absicht. Sie machen die erste Einrichtung kostenlos und ohne Zugangsdaten möglich.
 
-## Human checkpoints for optional integrations
+## Menschliche Checkpoints für optionale Integrationen
 
 ### Google Calendar
 
-You must sign in to Google Cloud, create or select a project, enable the Google Calendar API, configure the OAuth consent screen, and create a web OAuth client. The assistant can explain every field and validate the callback URL, but you must control the Google account and consent flow.
+Du musst dich bei Google Cloud anmelden, ein Projekt erstellen oder auswählen, die Google Calendar API aktivieren, den OAuth-Zustimmungsbildschirm konfigurieren und einen Web-OAuth-Client anlegen. Der Assistent kann jedes Feld erklären und die Callback-URL prüfen, aber das Google-Konto und den Zustimmungsablauf musst du selbst kontrollieren.
 
-Follow [Google Calendar setup](INTEGRATION-SETUP.md#google-calendar).
+Folge der [Google-Calendar-Einrichtung](INTEGRATION-SETUP.md#google-calendar).
 
-### Transactional email
+### Transaktionale E-Mails
 
-You must choose an SMTP provider, verify a sender domain, and create provider credentials. The assistant can place the variable names and verify configuration shape, but it cannot guarantee deliverability or complete DNS ownership checks for you.
+Du musst einen SMTP-Anbieter wählen, eine Absender-Domain verifizieren und Anbieter-Zugangsdaten anlegen. Der Assistent kann die Variablennamen setzen und die Form der Konfiguration prüfen, aber er kann weder Zustellbarkeit garantieren noch DNS-Eigentumsprüfungen für dich abschließen.
 
-Follow [transactional email setup](INTEGRATION-SETUP.md#transactional-email).
+Folge der [Einrichtung für transaktionale E-Mails](INTEGRATION-SETUP.md#transaktionale-e-mails).
 
-### Stripe test payments
+### Stripe-Testzahlungen
 
-You must sign in to Stripe, use test mode, obtain test credentials, and create a test webhook or run Stripe CLI locally. This release rejects Stripe live keys and live webhook events.
+Du musst dich bei Stripe anmelden, den Testmodus verwenden, Test-Zugangsdaten holen und einen Test-Webhook anlegen oder Stripe CLI lokal laufen lassen. Diese Version lehnt Stripe-Live-Schlüssel und Live-Webhook-Events ab.
 
-Follow [Stripe test payments](INTEGRATION-SETUP.md#stripe-test-payments).
+Folge der Anleitung für [Stripe-Testzahlungen](INTEGRATION-SETUP.md#stripe-testzahlungen).
 
-### Public deployment
+### Öffentliches Deployment
 
-Public deployment is an advanced self-hosting task. It requires a Linux or compatible container host, HTTPS, PostgreSQL 18 with persistent storage and verified TLS, separate web and worker services, secrets, backups, and monitoring.
+Ein öffentliches Deployment ist eine fortgeschrittene Self-Hosting-Aufgabe. Es erfordert einen Linux- oder kompatiblen Container-Host, HTTPS, PostgreSQL 18 mit persistentem Speicher und verifiziertem TLS, getrennte Web- und Worker-Services, Secrets, Backups und Monitoring.
 
-ChatGPT Sites is not compatible. Vercel is not supported out of the box. Do not let an assistant select or purchase infrastructure without showing you the architecture and estimated recurring costs first.
+ChatGPT Sites ist nicht kompatibel. Vercel wird nicht ohne Weiteres unterstützt. Lass einen Assistenten keine Infrastruktur auswählen oder kaufen, ohne dass er dir vorher die Architektur und die geschätzten laufenden Kosten zeigt.
 
-Follow the [Deployment guide](DEPLOYMENT.md).
+Folge der [Deployment-Anleitung](DEPLOYMENT.md).
 
-## Safe troubleshooting prompt
+## Sicherer Troubleshooting-Prompt
 
-If setup fails, give the assistant this follow-up prompt:
+Falls die Einrichtung fehlschlägt, gib dem Assistenten diesen Folge-Prompt:
 
 ```text
-Diagnose the SnagTime setup failure using command output, tracked source files, and the documented setup contract. Do not print or read credential values. Report the failing stage, the likely cause, and the smallest safe fix. Preserve .env.local and all existing data. Do not reset the database or reinstall everything unless you first explain why and receive my approval.
+Diagnostiziere den fehlgeschlagenen SnagTime-Setup anhand der Befehlsausgaben, der versionierten Quelldateien und des dokumentierten Setup-Vertrags. Gib keine Credential-Werte aus und lies keine. Berichte die fehlgeschlagene Phase, die wahrscheinliche Ursache und die kleinste sichere Korrektur. Erhalte .env.local und alle vorhandenen Daten. Setze die Datenbank nicht zurück und installiere nicht alles neu, ohne vorher zu erklären warum und meine Zustimmung zu bekommen.
 ```
 
-## Definition of done
+## Wann ist es fertig?
 
-The local student setup is complete when:
+Die lokale Einrichtung ist abgeschlossen, wenn:
 
-- `npm run setup:check` passes.
-- SnagTime opens locally and the organizer can sign in.
-- The organizer can create an event type and open its public booking link.
-- A test booking can be created, rescheduled, and cancelled.
-- The assistant clearly labels local adapters versus connected external services.
-- `.env.local` remains ignored and no credential appears in Git history or chat.
+- `npm run setup:check` besteht.
+- SnagTime lokal öffnet und sich die Gastgeber:in anmelden kann.
+- Die Gastgeber:in eine Terminart erstellen und deren öffentlichen Buchungslink öffnen kann.
+- Eine Testbuchung erstellt, umgebucht und storniert werden kann.
+- Der Assistent klar kennzeichnet, was lokale Adapter und was verbundene externe Dienste sind.
+- `.env.local` weiterhin von Git ignoriert wird und kein Credential in der Git-Historie oder im Chat auftaucht.
 
-An integration is complete only after its provider-specific verification steps pass. A public deployment is complete only after HTTPS, backups, worker processing, organizer and invitee email delivery, Google free/busy behavior, and Stripe test webhooks have all been verified.
+Eine Integration ist erst abgeschlossen, wenn ihre anbieterspezifischen Prüfschritte bestanden sind. Ein öffentliches Deployment ist erst abgeschlossen, wenn HTTPS, Backups, Worker-Verarbeitung, E-Mail-Zustellung an Gastgeber:in und Gast, das Google-Frei/Belegt-Verhalten und die Stripe-Test-Webhooks alle verifiziert wurden.

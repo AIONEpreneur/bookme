@@ -1,48 +1,48 @@
-# SnagTime brand system
+# SnagTime-Markensystem
 
-## Positioning
+## Positionierung
 
-SnagTime makes it fast and uncomplicated to offer time, share a link, and get booked. The product should feel capable enough for a business and friendly enough for a solo operator.
+SnagTime macht es schnell und unkompliziert, Zeit anzubieten, einen Link zu teilen und gebucht zu werden. Das Produkt soll leistungsfähig genug für ein Unternehmen wirken und freundlich genug für Solo-Selbstständige.
 
-**Primary promise:** Easy scheduling without the overhead.
+**Zentrales Versprechen:** Einfache Terminplanung ohne Ballast.
 
-**Tagline:** Snag a time. Get booked.
+**Tagline:** Schnapp dir einen Termin. Werde gebucht. (Original: „Snag a time. Get booked.")
 
-**Voice:** Direct, useful, upbeat, and human. Prefer short verbs such as “Share,” “Book,” “Connect,” and “Snag a time.” Avoid inflated productivity language.
+**Stimme:** Direkt, nützlich, positiv und menschlich. Bevorzuge kurze Verben wie „Teilen", „Buchen", „Verbinden" und „Termin schnappen". Vermeide aufgeblasene Produktivitätssprache.
 
 ## Logo
 
-The mark combines a calendar, a highlighted time slot, and a cursor. It should communicate selection and speed before the name is read.
+Die Marke kombiniert einen Kalender, einen hervorgehobenen Zeitslot und einen Cursor. Sie soll Auswahl und Geschwindigkeit vermitteln, noch bevor der Name gelesen wird.
 
-- Use the full lockup when horizontal space allows.
-- Use the square mark for favicons, avatars, and compact navigation.
-- Keep clear space equal to one quarter of the mark width.
-- Do not recolor individual pieces, stretch the mark, add effects, or place it on low-contrast backgrounds.
+- Verwende das vollständige Logo (Lockup), wenn horizontaler Platz vorhanden ist.
+- Verwende die quadratische Marke für Favicons, Avatare und kompakte Navigation.
+- Halte den Schutzraum bei einem Viertel der Markenbreite.
+- Färbe keine einzelnen Elemente um, verzerre die Marke nicht, füge keine Effekte hinzu und platziere sie nicht auf kontrastarmen Hintergründen.
 
-Production assets:
+Produktions-Assets:
 
-- `/icon.svg` is the square app mark.
-- `/snagtime-logo.svg` is the horizontal lockup.
+- `/icon.svg` ist die quadratische App-Marke.
+- `/snagtime-logo.svg` ist das horizontale Lockup.
 
-## Color
+## Farben
 
-| Role | Color | Hex |
+| Rolle | Farbe | Hex |
 | --- | --- | --- |
-| Primary | Snag Blue | `#2563EB` |
-| Primary hover | Deep Blue | `#1D4ED8` |
-| Dark surfaces | Midnight | `#0B1F3A` |
-| Primary text | Ink | `#10213D` |
-| Highlight | Sky | `#93C5FD` |
-| Soft surface | Blue Mist | `#EAF2FF` |
+| Primär | Snag Blue | `#2563EB` |
+| Primär (Hover) | Deep Blue | `#1D4ED8` |
+| Dunkle Flächen | Midnight | `#0B1F3A` |
+| Primärer Text | Ink | `#10213D` |
+| Hervorhebung | Sky | `#93C5FD` |
+| Weiche Fläche | Blue Mist | `#EAF2FF` |
 | Canvas | Cloud | `#F5F8FC` |
-| White | White | `#FFFFFF` |
+| Weiß | White | `#FFFFFF` |
 
-Green, amber, and red are reserved for status and warning meaning. They are not brand accents.
+Grün, Bernstein und Rot sind für Status- und Warnbedeutungen reserviert. Sie sind keine Markenakzente.
 
-## Typography and UI
+## Typografie und UI
 
-Use Inter or the native system sans-serif stack. Headlines are compact and confident with tight tracking. Body copy stays plain and readable. UI surfaces are white on a cool cloud canvas, with restrained borders, a midnight navigation rail, and blue reserved for active navigation, focus, and primary actions.
+Verwende Inter oder den nativen System-Sans-Serif-Stack. Überschriften sind kompakt und selbstbewusst mit enger Laufweite. Fließtext bleibt schlicht und gut lesbar. UI-Flächen sind weiß auf einem kühlen Cloud-Canvas, mit zurückhaltenden Rahmen, einer Midnight-Navigationsleiste und Blau, das für aktive Navigation, Fokus und primäre Aktionen reserviert ist.
 
-## Naming
+## Benennung
 
-Write the product name as `SnagTime`, with a capital S and T. Do not use `Snag Time`, `Snagtime`, or the former customer-facing name. Historical database roles, migration objects, cookie names, and compatibility identifiers retain their original internal names until a separately planned migration.
+Schreibe den Produktnamen als `SnagTime`, mit großem S und T. Verwende weder `Snag Time` noch `Snagtime` noch den früheren kundenseitigen Namen. Historische Datenbankrollen, Migrationsobjekte, Cookie-Namen und Kompatibilitätsbezeichner behalten ihre ursprünglichen internen Namen, bis eine separat geplante Migration ansteht.

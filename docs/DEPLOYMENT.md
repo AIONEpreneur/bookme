@@ -1,66 +1,66 @@
-# Deployment guide
+# Deployment-Anleitung
 
-## Choose the right deployment shape
+## Die richtige Deployment-Form wählen
 
-SnagTime is a stateful Next.js application with API routes, a relational database, OAuth callbacks, webhooks, and asynchronous calendar and email work.
+SnagTime ist eine zustandsbehaftete Next.js-Anwendung mit API-Routen, einer relationalen Datenbank, OAuth-Callbacks, Webhooks und asynchroner Kalender- und E-Mail-Verarbeitung.
 
-It cannot be deployed as static files. ChatGPT Sites is not compatible with this application. Vercel is not supported out of the box because the audited production design requires a continuously running worker and role-separated PostgreSQL connections.
+Sie kann nicht als statische Dateien deployt werden. ChatGPT Sites ist mit dieser Anwendung nicht kompatibel. Vercel wird nicht ohne Weiteres unterstützt, weil das geprüfte Produktiv-Design einen kontinuierlich laufenden Worker und PostgreSQL-Verbindungen mit getrennten Rollen voraussetzt.
 
-Use infrastructure that supports:
+Nutze Infrastruktur, die Folgendes unterstützt:
 
-- A long-running Node.js web container
-- A separate long-running worker container
-- PostgreSQL 18 with persistent storage and verified TLS
-- HTTPS ingress with a stable domain
-- Runtime secret injection
-- Scheduled encrypted backups
+- Einen dauerhaft laufenden Node.js-Web-Container
+- Einen separaten, dauerhaft laufenden Worker-Container
+- PostgreSQL 18 mit persistentem Speicher und verifiziertem TLS
+- HTTPS-Ingress mit einer stabilen Domain
+- Secret-Injection zur Laufzeit
+- Geplante verschlüsselte Backups
 
-A Linux VPS with Docker is the most direct fit. Container platforms can also work if they provide all of the capabilities above, but the included production Compose file is a reference deployment contract, not a one-click template for a particular vendor.
+Ein Linux-VPS mit Docker passt am direktesten. Container-Plattformen können ebenfalls funktionieren, wenn sie alle Fähigkeiten oben mitbringen — die mitgelieferte Produktiv-Compose-Datei ist aber ein Referenz-Deployment-Vertrag, keine Ein-Klick-Vorlage für einen bestimmten Anbieter.
 
-## Local versus production
+## Lokal versus Produktion
 
-| Area | Local demo | Production contract |
+| Bereich | Lokale Demo | Produktiv-Vertrag |
 |---|---|---|
-| Database | SQLite | PostgreSQL 18 |
-| Rate limiting | Process-local | PostgreSQL-backed |
-| Background work | Embedded in web process | Dedicated worker |
-| URL | `http://localhost:3000` | Canonical HTTPS origin |
-| Secrets | Ignored `.env.local` | Secret manager or mounted secret files |
-| Calendar | Local or Google | Google |
-| Email | Local inbox or SMTP | TLS SMTP |
-| Payments | Stub or Stripe test | Stripe test only |
+| Datenbank | SQLite | PostgreSQL 18 |
+| Rate Limiting | Prozess-lokal | PostgreSQL-gestützt |
+| Hintergrundarbeit | Eingebettet im Web-Prozess | Dedizierter Worker |
+| URL | `http://localhost:3000` | Kanonischer HTTPS-Origin |
+| Secrets | Von Git ignorierte `.env.local` | Secret-Manager oder gemountete Secret-Dateien |
+| Kalender | Lokal oder Google | Google |
+| E-Mail | Lokaler Posteingang oder SMTP | TLS-SMTP |
+| Zahlungen | Stub oder Stripe-Test | Nur Stripe-Test |
 
-Do not expose the local demo configuration to the public internet.
+Setze die lokale Demo-Konfiguration niemals dem öffentlichen Internet aus.
 
-## Production components
+## Produktiv-Komponenten
 
-The repository provides:
+Das Repository liefert:
 
-- `Dockerfile` target `runtime` for both web and worker
-- `Dockerfile` target `migration` for database migrations
-- `compose.production.yml` as the required service and secret topology
-- `infrastructure/postgresql/` for PostgreSQL TLS and host-based access controls
-- `prisma/postgresql/` for the generated schema, baseline migration, row-level security, and runtime guards
-- `scripts/provision-postgres-logins.mjs` for separate migration, app, worker, and monitor credentials
-- `scripts/backup-postgres.ps1` and `scripts/restore-postgres.ps1` for encrypted backup and restore workflows
+- `Dockerfile`-Target `runtime` für Web und Worker
+- `Dockerfile`-Target `migration` für Datenbank-Migrationen
+- `compose.production.yml` als verbindliche Service- und Secret-Topologie
+- `infrastructure/postgresql/` für PostgreSQL-TLS und hostbasierte Zugriffskontrollen
+- `prisma/postgresql/` für das generierte Schema, die Baseline-Migration, Row-Level Security und Laufzeit-Guards
+- `scripts/provision-postgres-logins.mjs` für getrennte Migrations-, App-, Worker- und Monitor-Zugangsdaten
+- `scripts/backup-postgres.ps1` und `scripts/restore-postgres.ps1` für verschlüsselte Backup- und Restore-Abläufe
 
-Historical internal identifiers beginning with `tempocove` remain in database roles and generated artifacts for migration compatibility. They are not customer-facing branding.
+Historische interne Bezeichner, die mit `tempocove` beginnen, bleiben aus Migrationskompatibilität in Datenbankrollen und generierten Artefakten erhalten. Sie sind kein kundensichtbares Branding.
 
-## Deployment sequence
+## Deployment-Reihenfolge
 
-### 1. Prepare a domain and HTTPS ingress
+### 1. Domain und HTTPS-Ingress vorbereiten
 
-Choose the final origin before configuring providers, for example:
+Lege den endgültigen Origin fest, bevor du die Anbieter konfigurierst, zum Beispiel:
 
 ```text
 https://book.your-domain.example
 ```
 
-Your reverse proxy must terminate HTTPS, strip any incoming proxy-authentication header from the client, inject the trusted `PROXY_SHARED_SECRET`, and forward requests to the web container.
+Dein Reverse Proxy muss HTTPS terminieren, jeden vom Client eingehenden Proxy-Authentication-Header entfernen, das vertrauenswürdige `PROXY_SHARED_SECRET` injizieren und die Anfragen an den Web-Container weiterleiten.
 
-### 2. Prepare PostgreSQL 18
+### 2. PostgreSQL 18 vorbereiten
 
-Use PostgreSQL 18 with verified TLS. The production URLs must include:
+Verwende PostgreSQL 18 mit verifiziertem TLS. Die Produktiv-URLs müssen enthalten:
 
 ```text
 sslmode=verify-full
@@ -71,9 +71,9 @@ connection_limit=20
 statement_timeout=2000
 ```
 
-The exact app, worker, migration, and monitor URLs use different database logins. Bootstrap owner credentials must never be mounted into the web or worker container.
+Die App-, Worker-, Migrations- und Monitor-URLs verwenden jeweils unterschiedliche Datenbank-Logins. Die Bootstrap-Owner-Zugangsdaten dürfen niemals in den Web- oder Worker-Container gemountet werden.
 
-Generate and validate the PostgreSQL artifacts:
+Generiere und validiere die PostgreSQL-Artefakte:
 
 ```bash
 npm ci
@@ -81,13 +81,13 @@ npm run db:generate:postgres
 npm run db:baseline:postgres
 ```
 
-Provision the runtime logins from an operator-controlled environment:
+Provisioniere die Laufzeit-Logins aus einer vom Operator kontrollierten Umgebung:
 
 ```bash
 npm run db:provision:postgres-logins
 ```
 
-That command requires the bootstrap database URL plus independent values for:
+Dieser Befehl benötigt die Bootstrap-Datenbank-URL plus unabhängige Werte für:
 
 - `TEMPOCOVE_MIGRATION_DB_PASSWORD`
 - `TEMPOCOVE_APP_DB_PASSWORD`
@@ -95,26 +95,26 @@ That command requires the bootstrap database URL plus independent values for:
 - `TEMPOCOVE_MONITOR_DB_PASSWORD`
 - `TENANT_CONTEXT_SECRET`
 
-### 3. Create independent application secrets
+### 3. Unabhängige Anwendungs-Secrets erstellen
 
-Required application secrets include:
+Zu den erforderlichen Anwendungs-Secrets gehören:
 
 - `AUTH_SECRET`
 - `BOOKING_CAPABILITY_SECRET`
 - `BOOKING_CAPABILITY_KEYRING`
-- `TOKEN_ENCRYPTION_KEY`, exactly 64 hexadecimal characters
+- `TOKEN_ENCRYPTION_KEY`, exakt 64 Hexadezimalzeichen
 - `EMAIL_TOKEN_SECRET`
 - `TENANT_CONTEXT_SECRET`
 - `RATE_LIMIT_HASH_SECRET`
 - `PROXY_SHARED_SECRET`
 - `OPERATOR_HEALTH_SECRET`
-- Provider secrets for Google, Stripe test mode, and SMTP
+- Anbieter-Secrets für Google, den Stripe-Testmodus und SMTP
 
-Every secret must be independent. Store them in the platform's secret manager or mount them as files. Never bake them into an image.
+Jedes Secret muss unabhängig sein. Speichere sie im Secret-Manager der Plattform oder mounte sie als Dateien. Backe sie niemals in ein Image ein.
 
-### 4. Build immutable images
+### 4. Unveränderliche Images bauen
 
-Use the 40-character Git commit SHA as `BUILD_ID`:
+Verwende den 40-stelligen Git-Commit-SHA als `BUILD_ID`:
 
 ```bash
 BUILD_ID=$(git rev-parse HEAD)
@@ -122,62 +122,62 @@ docker build --build-arg BUILD_ID="$BUILD_ID" --target runtime -t snagtime:"$BUI
 docker build --target migration -t snagtime-migration:"$BUILD_ID" .
 ```
 
-The runtime refuses to start when its configured `BUILD_ID` does not match the compiled build.
+Die Laufzeitumgebung verweigert den Start, wenn die konfigurierte `BUILD_ID` nicht zum kompilierten Build passt.
 
-### 5. Run migration, web, and worker
+### 5. Migration, Web und Worker ausführen
 
-Run the migration image with the migration database URL first. Then run two copies of the runtime image:
+Führe zuerst das Migrations-Image mit der Migrations-Datenbank-URL aus. Starte dann zwei Kopien des Runtime-Images:
 
-- Web command: `node apps/web/server.js`
-- Worker command: `node dist/worker.mjs`
+- Web-Befehl: `node apps/web/server.js`
+- Worker-Befehl: `node dist/worker.mjs`
 
-Use `compose.production.yml` to see the required environment split and secret mounts for each service. The file deliberately declares secrets as external, so your orchestration layer must create them before startup.
+In `compose.production.yml` siehst du die erforderliche Aufteilung der Umgebungsvariablen und Secret-Mounts pro Service. Die Datei deklariert Secrets bewusst als extern — deine Orchestrierungsschicht muss sie vor dem Start anlegen.
 
-### 6. Configure providers
+### 6. Anbieter konfigurieren
 
-Follow [Integration setup](INTEGRATION-SETUP.md). The hosted callbacks use the final HTTPS origin.
+Folge der [Integrations-Einrichtung](INTEGRATION-SETUP.md). Die gehosteten Callbacks verwenden den endgültigen HTTPS-Origin.
 
-### 7. Verify before sharing a booking link
+### 7. Verifizieren, bevor du einen Buchungslink teilst
 
-At minimum:
+Mindestens:
 
-1. Confirm `/api/health/live` responds.
-2. Confirm `/api/health/ready` reports ready.
-3. Register and verify a fresh account.
-4. Connect Google Calendar and verify free/busy blocking.
-5. Create, reschedule, and cancel a free booking.
-6. Confirm organizer and invitee SMTP delivery from unrelated mailboxes.
-7. Complete and refund a Stripe test booking.
-8. Restart web and worker containers and verify data remains intact.
-9. Run an encrypted backup and restore it into an isolated empty database.
+1. Bestätige, dass `/api/health/live` antwortet.
+2. Bestätige, dass `/api/health/ready` „ready" meldet.
+3. Registriere und verifiziere ein frisches Konto.
+4. Verbinde Google Calendar und prüfe das Frei/Belegt-Blocken.
+5. Erstelle, buche um und storniere eine kostenlose Buchung.
+6. Bestätige die SMTP-Zustellung an Gastgeber:in und Gast von unbeteiligten Postfächern aus.
+7. Schließe eine Stripe-Testbuchung ab und erstatte sie zurück.
+8. Starte Web- und Worker-Container neu und prüfe, dass die Daten intakt bleiben.
+9. Führe ein verschlüsseltes Backup aus und spiele es in eine isolierte leere Datenbank zurück.
 
-## Platform notes
+## Hinweise zu Plattformen
 
 ### Vercel
 
-Not supported by this repository's current production contract. The web frontend is Next.js, but the system also needs PostgreSQL runtime roles and a dedicated continuously running worker.
+Vom aktuellen Produktiv-Vertrag dieses Repositories nicht unterstützt. Das Web-Frontend ist Next.js, aber das System braucht zusätzlich PostgreSQL-Laufzeitrollen und einen dedizierten, kontinuierlich laufenden Worker.
 
 ### ChatGPT Sites
 
-Not compatible. This is not a static site and needs server-side code, persistent storage, OAuth callbacks, and webhooks.
+Nicht kompatibel. Dies ist keine statische Website — die Anwendung braucht serverseitigen Code, persistenten Speicher, OAuth-Callbacks und Webhooks.
 
-### Railway, Render, Fly.io, and similar platforms
+### Railway, Render, Fly.io und ähnliche Plattformen
 
-Potentially compatible if configured as separate web and worker services with PostgreSQL, stable HTTPS, mounted secrets, and the required database TLS posture. No one-click template is included or verified in this release.
+Potenziell kompatibel, wenn sie als getrennte Web- und Worker-Services mit PostgreSQL, stabilem HTTPS, gemounteten Secrets und der erforderlichen Datenbank-TLS-Konfiguration eingerichtet werden. Diese Version enthält keine Ein-Klick-Vorlage und hat keine verifiziert.
 
-### Linux VPS with Docker
+### Linux-VPS mit Docker
 
-The closest match to the included architecture because you control the reverse proxy, certificates, PostgreSQL container, secret mounts, worker, and backups. It also carries the most operational responsibility.
+Die engste Entsprechung zur mitgelieferten Architektur, weil du Reverse Proxy, Zertifikate, PostgreSQL-Container, Secret-Mounts, Worker und Backups selbst kontrollierst. Sie bringt aber auch die meiste Betriebsverantwortung mit sich.
 
-## Operational ownership
+## Betriebsverantwortung
 
-The MIT-licensed software is free. A public service is not maintenance-free. The deployer owns:
+Die MIT-lizenzierte Software ist kostenlos. Ein öffentlicher Dienst ist aber nicht wartungsfrei. Wer deployt, trägt die Verantwortung für:
 
-- Hosting and domain costs
-- Database capacity and backups
-- Security updates and dependency alerts
-- Google OAuth consent and verification requirements
-- SMTP reputation, SPF, DKIM, DMARC, and deliverability
-- Stripe account configuration and any future live-mode implementation
-- Privacy policy, terms, data retention, and regulatory obligations
-- Monitoring, incident response, and disaster recovery
+- Hosting- und Domain-Kosten
+- Datenbank-Kapazität und Backups
+- Sicherheitsupdates und Dependency-Warnungen
+- Google-OAuth-Zustimmung und Verifizierungsanforderungen
+- SMTP-Reputation, SPF, DKIM, DMARC und Zustellbarkeit
+- Stripe-Konto-Konfiguration und jede zukünftige Live-Modus-Implementierung
+- Datenschutzerklärung, AGB, Datenaufbewahrung und regulatorische Pflichten
+- Monitoring, Incident Response und Disaster Recovery

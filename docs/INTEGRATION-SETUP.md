@@ -1,36 +1,36 @@
-# Integration setup
+# Integrations-Einrichtung
 
-SnagTime works locally without external credentials. Enable integrations only after the local booking flow works.
+SnagTime funktioniert lokal ohne externe Zugangsdaten. Aktiviere Integrationen erst, wenn der lokale Buchungsablauf funktioniert.
 
 ## Google Calendar
 
-### 1. Create a Google OAuth application
+### 1. Eine Google-OAuth-Anwendung erstellen
 
-In Google Cloud Console:
+In der Google Cloud Console:
 
-1. Create or select a project.
-2. Enable the Google Calendar API.
-3. Configure the OAuth consent screen.
-4. Create an OAuth client with application type **Web application**.
-5. Add your exact callback URL as an authorized redirect URI.
+1. Erstelle oder wähle ein Projekt.
+2. Aktiviere die Google Calendar API.
+3. Konfiguriere den OAuth-Zustimmungsbildschirm.
+4. Erstelle einen OAuth-Client mit dem Anwendungstyp **Webanwendung**.
+5. Trage deine exakte Callback-URL als autorisierte Weiterleitungs-URI ein.
 
-Local callback:
+Lokaler Callback:
 
 ```text
 http://localhost:3000/api/integrations/google/callback
 ```
 
-Hosted callback:
+Callback für ein gehostetes Deployment:
 
 ```text
 https://your-domain.example/api/integrations/google/callback
 ```
 
-The scheme, host, port, and path must match exactly. If the OAuth app is in testing mode, add the organizer account as a test user.
+Schema, Host, Port und Pfad müssen exakt übereinstimmen. Wenn die OAuth-App im Testmodus ist, füge das Konto der Gastgeber:in als Testnutzer hinzu.
 
-### 2. Configure SnagTime
+### 2. SnagTime konfigurieren
 
-Set these values in `.env.local` for local development or in your host's secret manager for deployment:
+Setze diese Werte in `.env.local` für die lokale Entwicklung oder im Secret-Manager deines Hosters für das Deployment:
 
 ```dotenv
 CALENDAR_PROVIDER="google"
@@ -39,22 +39,22 @@ GOOGLE_CLIENT_SECRET="your-client-secret"
 GOOGLE_CALENDAR_ID="primary"
 ```
 
-Restart SnagTime, sign in, open `/integrations`, and select **Connect Google Calendar**.
+Starte SnagTime neu, melde dich an, öffne `/integrations` und wähle **Connect Google Calendar**.
 
-SnagTime requests:
+SnagTime fordert folgende Berechtigungen an:
 
 - `openid`
 - `email`
 - `https://www.googleapis.com/auth/calendar.freebusy`
 - `https://www.googleapis.com/auth/calendar.events`
 
-Verify the integration status reports complete, create a test booking, confirm the event appears on the organizer calendar, then reschedule and cancel it.
+Prüfe, dass der Integrationsstatus als vollständig gemeldet wird, erstelle eine Testbuchung, bestätige, dass der Termin im Kalender der Gastgeber:in erscheint, und buche ihn dann um und storniere ihn.
 
-## Transactional email
+## Transaktionale E-Mails
 
-Google Calendar invitations are sent by Google from the connected calendar. SnagTime's organizer notifications, invitee confirmations, workspace invitations, verification messages, and recovery messages use your SMTP provider.
+Google-Calendar-Einladungen verschickt Google über den verbundenen Kalender. Die Benachrichtigungen an Gastgeber:innen, Bestätigungen an Gäste, Workspace-Einladungen, Verifizierungs- und Wiederherstellungs-Nachrichten von SnagTime laufen über deinen SMTP-Anbieter.
 
-Configure:
+Konfiguriere:
 
 ```dotenv
 EMAIL_PROVIDER="smtp"
@@ -69,21 +69,21 @@ EMAIL_REPLY_TO="support@your-domain.example"
 EMAIL_SENDER_DOMAIN="your-domain.example"
 ```
 
-Use `SMTP_TLS_MODE="implicit"` for providers that require implicit TLS, commonly on port 465. The address inside `EMAIL_FROM` must use the exact `EMAIL_SENDER_DOMAIN`.
+Verwende `SMTP_TLS_MODE="implicit"` für Anbieter, die implizites TLS verlangen, üblicherweise auf Port 465. Die Adresse in `EMAIL_FROM` muss exakt die `EMAIL_SENDER_DOMAIN` verwenden.
 
-Before public use:
+Vor der öffentlichen Nutzung:
 
-1. Verify the sender with your SMTP provider.
-2. Publish SPF and DKIM records.
-3. Publish a DMARC policy.
-4. Book from an unrelated mailbox.
-5. Confirm both organizer and invitee messages arrive outside spam.
+1. Verifiziere den Absender bei deinem SMTP-Anbieter.
+2. Veröffentliche SPF- und DKIM-Einträge.
+3. Veröffentliche eine DMARC-Richtlinie.
+4. Buche testweise von einem unbeteiligten Postfach aus.
+5. Bestätige, dass die Nachrichten an Gastgeber:in und Gast ankommen und nicht im Spam landen.
 
-## Stripe test payments
+## Stripe-Testzahlungen
 
-This release accepts Stripe test-mode credentials only. Live keys and live webhook events are rejected.
+Diese Version akzeptiert ausschließlich Stripe-Testmodus-Zugangsdaten. Live-Schlüssel und Live-Webhook-Events werden abgelehnt.
 
-Configure:
+Konfiguriere:
 
 ```dotenv
 PAYMENTS_PROVIDER="stripe"
@@ -92,22 +92,22 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
 STRIPE_WEBHOOK_SECRET="whsec_..."
 ```
 
-Local webhook forwarding:
+Lokale Webhook-Weiterleitung:
 
 ```bash
 stripe login
 stripe listen --forward-to http://localhost:3000/api/webhooks/stripe
 ```
 
-Copy the signing secret printed by Stripe CLI into `STRIPE_WEBHOOK_SECRET`, restart SnagTime, and create an event duration with a nonzero test price.
+Kopiere das Signing-Secret, das Stripe CLI ausgibt, in `STRIPE_WEBHOOK_SECRET`, starte SnagTime neu und lege eine Termin-Dauer mit einem Testpreis größer als null an.
 
-For a hosted deployment, create a Stripe webhook endpoint at:
+Für ein gehostetes Deployment erstellst du einen Stripe-Webhook-Endpunkt unter:
 
 ```text
 https://your-domain.example/api/webhooks/stripe
 ```
 
-Subscribe it to:
+Abonniere diese Events:
 
 - `checkout.session.completed`
 - `checkout.session.expired`
@@ -115,18 +115,18 @@ Subscribe it to:
 - `refund.updated`
 - `refund.failed`
 
-Verify a Stripe test card confirms a paid booking and that cancelling a confirmed test payment creates the expected refund state.
+Prüfe, dass eine Stripe-Testkarte eine bezahlte Buchung bestätigt und dass das Stornieren einer bestätigten Testzahlung den erwarteten Rückerstattungsstatus erzeugt.
 
-### Optional Stripe CLI claimable sandbox
+### Optional: Stripe CLI Claimable Sandbox
 
-The repository can import a Stripe CLI claimable-sandbox profile into the ignored `.env.stripe-sandbox.local` without printing its credential values:
+Das Repository kann ein Stripe-CLI-Claimable-Sandbox-Profil in die von Git ignorierte `.env.stripe-sandbox.local` importieren, ohne die Credential-Werte auszugeben:
 
 ```powershell
 npm run stripe:sandbox:import -- -Profile snagtime-qa
 npm run dev:stripe-sandbox
 ```
 
-If an expired profile cannot be repopulated, create the replacement in a fresh temporary Stripe configuration and pass that exact configuration to every command:
+Falls sich ein abgelaufenes Profil nicht neu befüllen lässt, erstelle den Ersatz in einer frischen temporären Stripe-Konfiguration und übergib genau diese Konfiguration an jeden Befehl:
 
 ```powershell
 $freshStripeConfig = Join-Path ([IO.Path]::GetTempPath()) 'snagtime-stripe-rotated.toml'
@@ -135,14 +135,14 @@ npm run stripe:sandbox:import -- -Profile snagtime-qa-rotated -ConfigPath $fresh
 stripe listen --project-name snagtime-qa-rotated --config $freshStripeConfig --forward-to http://localhost:3000/api/webhooks/stripe
 ```
 
-Delete the temporary Stripe configuration when the sandbox is no longer needed. Never commit it or `.env.stripe-sandbox.local`.
+Lösche die temporäre Stripe-Konfiguration, sobald die Sandbox nicht mehr gebraucht wird. Committe sie niemals — und auch nicht `.env.stripe-sandbox.local`.
 
-## Public URL
+## Öffentliche URL
 
-Set the canonical origin without a path, query, or fragment:
+Setze den kanonischen Origin ohne Pfad, Query oder Fragment:
 
 ```dotenv
 NEXT_PUBLIC_APP_URL="https://your-domain.example"
 ```
 
-Update both Google and Stripe callback settings whenever the canonical domain changes.
+Aktualisiere die Callback-Einstellungen bei Google und Stripe jedes Mal, wenn sich die kanonische Domain ändert.

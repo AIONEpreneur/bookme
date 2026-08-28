@@ -1,114 +1,124 @@
 <div align="center">
   <img src="apps/web/public/snagtime-logo.svg" alt="SnagTime" width="305" />
 
-  <p><strong>Snag a time. Get booked.</strong></p>
-  <p>A free, self-hostable scheduling app for availability, booking links, calendar sync, email notifications, and test payments.</p>
+  <p><strong>Schnapp dir einen Termin. Werde gebucht.</strong></p>
+  <p>Eine kostenlose, selbst hostbare Terminbuchungs-App für Verfügbarkeiten, Buchungslinks, Kalender-Synchronisation, E-Mail-Benachrichtigungen und Testzahlungen.</p>
 </div>
 
-## What SnagTime does
+## Über diese deutsche Community-Edition
 
-SnagTime gives you the source code for your own scheduling system. You can run it locally for free, customize it, and host it on infrastructure you control.
+Dies ist die deutsche Community-Edition von **SnagTime** von [nateherkai](https://github.com/nateherkai/snagtime), veröffentlicht unter der MIT-Lizenz. Die Benutzeroberfläche und die E-Mails wurden ins Deutsche übersetzt (in der Du-Form), damit deutschsprachige Solopreneure, Coaches und kleine Teams das Tool ohne Sprachbarriere nutzen können.
 
-- Account registration, sign-in, password recovery, and email verification
-- Workspaces, members, invitations, and workspace switching
-- Event types with multiple durations and optional test pricing
-- Weekly availability, date overrides, buffers, minimum notice, and booking windows
-- Public booking links with time-zone handling and custom questions
-- Booking confirmation, rescheduling, cancellation, and recovery links
-- Google Calendar free/busy checks and event creation
-- Stripe Checkout in test mode, including webhook confirmation and refund handling
-- SMTP email for organizers and invitees
-- Custom workspace branding, accent colors, profile images, and uploaded logos
-- SQLite for the local demo and a hardened PostgreSQL production architecture
+- Original-Projekt: [https://github.com/nateherkai/snagtime](https://github.com/nateherkai/snagtime)
+- Diese deutsche Variante: [https://github.com/aionepreneur/bookme](https://github.com/aionepreneur/bookme)
+- Lizenz: [MIT](LICENSE) — der ursprüngliche Lizenztext bleibt unverändert erhalten.
 
-## Set it up with Codex or Claude Code
+## Was SnagTime kann
 
-You can give an AI coding assistant this repository URL and have it handle the local installation while it pauses for the account steps only you can complete.
+SnagTime gibt dir den Quellcode für dein eigenes Terminbuchungssystem. Du kannst es kostenlos lokal laufen lassen, anpassen und auf Infrastruktur hosten, die du selbst kontrollierst.
 
-Open [AI-assisted setup](docs/AI-SETUP.md), copy the student prompt, and paste it into Codex or Claude Code with this repository link:
+- Registrierung, Anmeldung, Passwort-Wiederherstellung und E-Mail-Bestätigung
+- Workspaces, Mitglieder, Einladungen und Workspace-Wechsel
+- Terminarten mit mehreren Dauern und optionalen Testpreisen
+- Wöchentliche Verfügbarkeit, Ausnahmen für einzelne Tage, Pufferzeiten, Mindestvorlauf und Buchungszeitfenster
+- Öffentliche Buchungslinks mit Zeitzonen-Handling und eigenen Fragen
+- Buchungsbestätigung, Umbuchung, Stornierung und Wiederherstellungs-Links
+- Google Calendar: Frei/Belegt-Abgleich und Termin-Erstellung
+- Stripe Checkout im Testmodus, inklusive Webhook-Bestätigung und Rückerstattungen
+- SMTP-E-Mails für Gastgeber:innen und Gäste
+- Eigenes Workspace-Branding, Akzentfarben, Profilbilder und hochgeladene Logos
+- SQLite für die lokale Demo und eine gehärtete PostgreSQL-Architektur für den Produktivbetrieb
+
+## Einrichtung mit Codex oder Claude Code
+
+Du kannst einem KI-Coding-Assistenten die URL dieses Repositories geben und die lokale Installation von ihm erledigen lassen. Der Assistent pausiert bei den Konto-Schritten, die nur du selbst durchführen kannst.
+
+Öffne die [KI-gestützte Einrichtung](docs/AI-SETUP.md), kopiere den vorbereiteten Prompt und füge ihn zusammen mit diesem Repository-Link in Codex oder Claude Code ein:
 
 ```text
-https://github.com/nateherkai/snagtime
+https://github.com/aionepreneur/bookme
 ```
 
-The guide separates the credential-free local demo, optional integrations, and advanced public deployment so the assistant does not pull you into infrastructure work before the app runs locally.
+Die Anleitung trennt sauber zwischen der lokalen Demo ohne Zugangsdaten, optionalen Integrationen und dem fortgeschrittenen öffentlichen Deployment — so zieht dich der Assistent nicht in Infrastruktur-Arbeit, bevor die App überhaupt lokal läuft.
 
-## Five-minute local setup
+## Lokale Einrichtung in fünf Minuten
 
-### Requirements
+### Voraussetzungen
 
-- Node.js 20.9 or newer. Node.js 24 is the verified runtime.
+- Node.js 20.9 oder neuer. Node.js 24 ist die verifizierte Laufzeitumgebung.
 - npm
 - Git
 
-### 1. Clone and enter the repository
+### 1. Repository klonen und öffnen
 
 ```bash
-git clone https://github.com/nateherkai/snagtime.git
-cd snagtime
+git clone https://github.com/aionepreneur/bookme.git
+cd bookme
 ```
 
-### 2. Generate your local configuration
+### 2. Lokale Konfiguration erzeugen
 
 ```bash
 npm run setup
 ```
 
-The setup command creates an ignored `.env.local`, generates independent cryptographic secrets, and prints the local demo login once. You can provide your own organizer login instead:
+Der Setup-Befehl erstellt eine von Git ignorierte `.env.local`, generiert unabhängige kryptografische Secrets und zeigt die lokalen Demo-Zugangsdaten einmalig an. Du kannst stattdessen auch eigene Zugangsdaten für die Gastgeber:in angeben:
 
 ```bash
 npm run setup -- --email you@example.com --password "YourStrong!Password7"
 ```
 
-### 3. Install, prepare the database, and start SnagTime
+### 3. Installieren, Datenbank vorbereiten und SnagTime starten
 
 ```bash
 npm run demo:free
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and use the login printed by the setup command.
+Öffne [http://localhost:3000](http://localhost:3000) und melde dich mit den Zugangsdaten an, die der Setup-Befehl angezeigt hat.
 
-The credential-free local mode uses SQLite, a local calendar adapter, a local email inbox, and stub payments. It does not call Google or Stripe.
+Der lokale Modus ohne Zugangsdaten nutzt SQLite, einen lokalen Kalender-Adapter, einen lokalen E-Mail-Posteingang und einen Zahlungs-Stub. Er ruft weder Google noch Stripe auf.
 
-## Connect your services
+## Deine Dienste verbinden
 
-Copying the repository gives you all of the software. External integrations still belong to you and must be configured with your own accounts.
+Mit dem Repository bekommst du die komplette Software. Externe Integrationen gehören trotzdem dir und müssen mit deinen eigenen Konten eingerichtet werden.
 
-| Capability | What you provide | Required for local demo? |
+| Funktion | Was du bereitstellst | Für die lokale Demo nötig? |
 |---|---|---:|
-| Database | Nothing for SQLite, PostgreSQL for production | No |
-| Public hosting | HTTPS domain plus a long-running Node web service and worker | No |
-| Google Calendar | OAuth client ID and client secret | No |
-| Transactional email | SMTP host, user, password, and verified sender domain | No |
-| Stripe payments | Stripe test secret, publishable key, and webhook secret | No |
+| Datenbank | Nichts für SQLite, PostgreSQL für den Produktivbetrieb | Nein |
+| Öffentliches Hosting | HTTPS-Domain plus dauerhaft laufender Node-Webservice und Worker | Nein |
+| Google Calendar | OAuth Client-ID und Client-Secret | Nein |
+| Transaktionale E-Mails | SMTP-Host, Benutzer, Passwort und verifizierte Absender-Domain | Nein |
+| Stripe-Zahlungen | Stripe-Test-Secret, Publishable Key und Webhook-Secret | Nein |
 
-See [Integration setup](docs/INTEGRATION-SETUP.md) for exact callback URLs, environment variables, and verification steps.
+In der [Integrations-Einrichtung](docs/INTEGRATION-SETUP.md) findest du die exakten Callback-URLs, Umgebungsvariablen und Prüfschritte.
 
-## Put it on the internet
+## Ins Internet bringen
 
-SnagTime is a dynamic application, not a static website. It needs server-side Node.js execution, a persistent database, webhook endpoints, and a continuously running background worker.
+SnagTime ist eine dynamische Anwendung, keine statische Website. Sie braucht serverseitiges Node.js, eine dauerhafte Datenbank, Webhook-Endpunkte und einen kontinuierlich laufenden Hintergrund-Worker.
 
-- ChatGPT Sites is not a compatible production host for this repository.
-- Vercel is not supported out of the box because the current production design requires a long-running worker and PostgreSQL runtime roles.
-- A Linux VPS or a container platform that supports a web service, a worker service, persistent PostgreSQL, secrets, and HTTPS is the right shape.
+- ChatGPT Sites ist als Produktiv-Hosting für dieses Repository nicht geeignet.
+- Vercel wird nicht ohne Weiteres unterstützt, weil das aktuelle Produktiv-Design einen dauerhaft laufenden Worker und PostgreSQL-Laufzeitrollen voraussetzt.
+- Ein Linux-VPS oder eine Container-Plattform mit Webservice, Worker-Service, persistentem PostgreSQL, Secrets und HTTPS ist die richtige Umgebung.
 
-The full production architecture is intentionally strict. It uses PostgreSQL 18, forced row-level security, separate app and worker credentials, verified database TLS, and authenticated proxy ingress. Read [Deployment guide](docs/DEPLOYMENT.md) before choosing a host.
+Die vollständige Produktiv-Architektur ist bewusst streng: PostgreSQL 18, erzwungene Row-Level Security, getrennte Zugangsdaten für App und Worker, verifiziertes Datenbank-TLS und authentifizierter Proxy-Zugang. Lies die [Deployment-Anleitung](docs/DEPLOYMENT.md), bevor du dich für einen Hoster entscheidest.
 
-## What is actually free?
+## Was ist wirklich kostenlos?
 
-The SnagTime source code is free under the MIT License. Running it locally can also cost nothing.
+Der SnagTime-Quellcode ist unter der MIT-Lizenz kostenlos. Auch der lokale Betrieb kann komplett kostenlos sein.
 
-A public deployment can still create third-party costs:
+Ein öffentliches Deployment kann trotzdem Kosten bei Drittanbietern verursachen:
 
-- Hosting or a VPS
-- A domain name
-- Managed PostgreSQL, if your host does not include it
-- Transactional email volume
-- Provider fees for any services you connect
+- Hosting oder ein VPS
+- Ein Domainname
+- Managed PostgreSQL, falls dein Hoster keins mitbringt
+- Versandvolumen für transaktionale E-Mails
+- Anbietergebühren für alle Dienste, die du verbindest
 
-Google OAuth credentials can be created without paying SnagTime. Stripe test mode is free for testing. This release deliberately rejects Stripe live-mode keys, so do not advertise it as a live payment processor without implementing and auditing live-mode support.
+Google-OAuth-Zugangsdaten kannst du erstellen, ohne für SnagTime zu bezahlen. Der Stripe-Testmodus ist zum Testen kostenlos.
 
-## Useful commands
+> **Wichtig: Stripe funktioniert ausschließlich im TESTMODUS.** Diese Version lehnt Stripe-Live-Schlüssel absichtlich ab. Bewirb sie nicht als echten Zahlungsanbieter, ohne vorher Live-Modus-Unterstützung zu implementieren und sicherheitstechnisch prüfen zu lassen.
+
+## Nützliche Befehle
 
 ```bash
 npm run setup          # Create .env.local and local credentials
@@ -122,7 +132,7 @@ npm run build          # Create the Next.js production build
 npm run ci:secret-scan # Scan public source files for credential patterns
 ```
 
-Database commands:
+Datenbank-Befehle:
 
 ```bash
 npm run db:generate
@@ -130,9 +140,9 @@ npm run db:migrate
 npm run db:seed
 ```
 
-`npm run db:reset` destroys the local SQLite database. Use it only when you intentionally want a clean demo.
+`npm run db:reset` löscht die lokale SQLite-Datenbank unwiderruflich. Nutze den Befehl nur, wenn du bewusst eine frische Demo willst.
 
-## Project structure
+## Projektstruktur
 
 ```text
 apps/web/             Next.js application and API routes
@@ -144,16 +154,16 @@ tests/                Browser and end-to-end tests
 docs/                 Setup, deployment, and brand documentation
 ```
 
-## Project status
+## Projektstatus
 
-The local SQLite experience and integration test paths are designed for demos, development, and personal experimentation. The production architecture is an advanced self-hosting path, not a one-click managed service. You are responsible for infrastructure security, backups, provider configuration, deliverability, compliance, and ongoing operations.
+Die lokale SQLite-Variante und die Integrations-Testpfade sind für Demos, Entwicklung und persönliches Ausprobieren gedacht. Die Produktiv-Architektur ist ein fortgeschrittener Self-Hosting-Weg, kein verwalteter Ein-Klick-Dienst. Du bist selbst verantwortlich für Infrastruktur-Sicherheit, Backups, Anbieter-Konfiguration, E-Mail-Zustellbarkeit, Compliance und den laufenden Betrieb.
 
-Please read [Security](SECURITY.md) before exposing a deployment publicly.
+Bitte lies die [Sicherheitshinweise](SECURITY.md), bevor du ein Deployment öffentlich zugänglich machst.
 
-## Contributing
+## Mitmachen
 
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Issues und Pull Requests sind willkommen. Siehe [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License
+## Lizenz
 
-SnagTime is available under the [MIT License](LICENSE).
+SnagTime ist unter der [MIT-Lizenz](LICENSE) verfügbar.

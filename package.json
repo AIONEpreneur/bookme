@@ -5,10 +5,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nateherkai/snagtime.git"
+    "url": "https://github.com/aionepreneur/bookme.git"
   },
-  "bugs": "https://github.com/nateherkai/snagtime/issues",
-  "homepage": "https://github.com/nateherkai/snagtime#readme",
+  "bugs": "https://github.com/aionepreneur/bookme/issues",
+  "homepage": "https://github.com/aionepreneur/bookme#readme",
   "type": "module",
   "workspaces": [
     "apps/*"

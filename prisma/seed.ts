@@ -21,12 +21,12 @@ async function main() {
   const host = await prisma.user.upsert({
     where: { email },
     update: { passwordHash, emailVerifiedAt: new Date() },
-    create: { email, name: "Nate Herk", timeZone: "America/Chicago", passwordHash, emailVerifiedAt: new Date() },
+    create: { email, name: "Demo-Gastgeberin", timeZone: "America/Chicago", passwordHash, emailVerifiedAt: new Date() },
   });
   const workspace = await prisma.workspace.upsert({
     where: { id: `ws_${host.id}` },
     update: {},
-    create: { id: `ws_${host.id}`, name: "Uppity AI", timeZone: host.timeZone, onboardingCompletedAt: new Date() },
+    create: { id: `ws_${host.id}`, name: "Demo-Workspace", timeZone: host.timeZone, onboardingCompletedAt: new Date() },
   });
   await prisma.membership.upsert({
     where: { workspaceId_userId: { workspaceId: workspace.id, userId: host.id } },
@@ -108,7 +108,7 @@ async function main() {
   await prisma.workspaceBranding.upsert({
     where: { workspaceId: workspace.id },
     update: {},
-    create: { workspaceId: workspace.id, userId: host.id, workspaceName: "Uppity AI", accentColor: "#2563EB", description: "Buche ein fokussiertes Gespräch mit Nate." },
+    create: { workspaceId: workspace.id, userId: host.id, workspaceName: "Demo-Workspace", accentColor: "#2563EB", description: "Buche ein fokussiertes Gespräch mit mir." },
   });
 }
 

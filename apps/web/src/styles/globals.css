@@ -71,3 +71,82 @@ a:focus-visible,button:focus-visible,[role=button]:focus-visible,[role=tab]:focu
 .date-chip{background:#f6f9ff;color:var(--ink);border-color:#d9e4f2}.integration-mark{background:#f3f7fd!important;border-color:#d7e2f0!important}.mark-worker{color:#1d4ed8!important}.duration-options button.is-selected{border-color:var(--brand);background:#f5f9ff;box-shadow:0 0 0 2px rgba(37,99,235,.09)}.time-grid button.is-selected{background:var(--brand-soft);border-color:var(--brand);color:#1e40af}.brand-preview{background:#eef4fb}.booking-info{background:#f8faff}.public-page{background:#f4f7fb}
 @media(max-width:820px){.sidebar{background:#0b1f3a}.sidebar .brand-name{color:#fff}}
 .stepper-step{appearance:none;display:inline-flex;align-items:center;gap:.35rem;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.stepper-step:focus-visible{outline:2px solid var(--brand-dark);outline-offset:3px;border-radius:6px}.stepper-step[aria-disabled="true"]{color:#67727d;cursor:not-allowed}.stepper-step>span{font-size:inherit}.stepper-connector{height:1px;background:var(--line)}.flow-heading h2[tabindex="-1"]:focus{outline:none}
+
+/* BookMe Look: großzügig, weich, freundlich — helle Fläche, runde Karten, Pill-Controls. */
+:root{--ink:#151b26;--muted:#5c6675;--subtle:#5b6b82;--line:#e8ebf1;--line-strong:#dbe0e9;--canvas:#f4f5f8;--brand-soft:#e9f0ff;--shadow:0 1px 2px rgba(16,21,33,.04),0 10px 30px rgba(16,21,33,.05);--shadow-lg:0 24px 70px rgba(16,21,33,.16);--radius:16px;--radius-sm:12px;--sidebar:252px}
+body{font-size:14.5px}
+h1{font-size:33px;font-weight:760;letter-spacing:-.04em}
+h2{font-size:19px}
+.page-header{margin-bottom:4px}
+.page-header h1{margin-bottom:8px}
+.page-header p{font-size:14.5px}
+.main-content{max-width:1440px;padding:40px 44px 72px}
+.page-stack{gap:28px}
+.sidebar{padding:24px 16px 16px;border-right:1px solid var(--line)}
+.sidebar-brand{padding:0 10px 28px}
+.nav-item{padding:11px 13px;border-radius:12px;font-size:14px;gap:12px}
+.nav-item.is-active{background:var(--brand-soft)}
+.nav-label{padding:10px 14px 6px}
+.topbar{height:68px;border-bottom:1px solid var(--line)}
+.button{border-radius:12px;min-height:41px;padding:9px 16px;font-size:13.5px}
+.button-sm{border-radius:10px;min-height:34px}
+.button-primary,.button.button-primary{background:var(--brand);border-color:var(--brand);box-shadow:0 6px 16px rgba(37,99,235,.24)}
+.button-primary:hover:not(:disabled),.button.button-primary:hover:not(:disabled){background:var(--brand-dark);border-color:var(--brand-dark)}
+.panel,.metric-card,.event-card,.form-card,.integration-card,.integration-summary>div,.auth-card,.mini-booking-card,.confirmation-card,.manage-summary,.current-booking,.manage-form,.reschedule-picker{border-radius:var(--radius)}
+.search-field{border-radius:999px;background:#eef0f4;border-color:transparent;padding:0 16px;width:min(380px,100%)}
+.search-field input{height:42px}
+.search-field:focus-within{background:#fff;border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.bookings-toolbar select,.bookings-toolbar>.button{border-radius:999px;padding:0 16px;background:#fff;border-color:var(--line-strong)}
+.segmented{border-radius:999px;background:#e9ebf0;padding:4px}
+.segmented button{border-radius:999px;padding:7px 14px;font-size:12.5px}
+.toolbar select{border-radius:999px;padding:9px 14px}
+.event-card{transition:.18s ease}
+.event-card:hover{transform:translateY(-2px);box-shadow:0 3px 6px rgba(16,21,33,.05),0 18px 44px rgba(16,21,33,.09)}
+.event-card-accent{height:5px}
+.event-card-body{padding:14px 20px}
+.event-card-head{padding:16px 20px 0}
+.event-card-body h2{font-size:19px;letter-spacing:-.02em}
+.event-card-body p{font-size:13px}
+.event-card-link,.event-card-foot{padding:12px 20px}
+.event-card-stats>div{padding:12px 20px}
+.icon-button{border-radius:999px}
+.metric-card{padding:20px}
+.metric-icon{border-radius:12px;width:42px;height:42px}
+.metric-card>strong{font-size:25px}
+.metric-label{font-size:12px}
+.field input,.field select,.field textarea{border-radius:11px;padding:10px 12px;font-size:13px}
+.auth-card form input,.auth-card form select{border-radius:11px}
+.date-chip{border-radius:12px}
+.quick-icon,.exception-icon,.summary-icon,.empty-icon{border-radius:12px}
+.booking-shell{border-radius:22px}
+.booking-calendar{border-radius:14px}
+.calendar-week button{border-radius:10px}
+.time-grid button{border-radius:10px;min-height:40px;font-size:12px}
+.duration-options button{border-radius:13px;padding:14px}
+.detail-list,.review-card,.modal-details,.onboarding-summary,.member-list,.usage-list{border-radius:13px}
+.detail-drawer{border-radius:20px 0 0 20px}
+.modal{border-radius:20px}
+.toast{border-radius:12px}
+.settings-nav button{border-radius:11px;padding:10px 13px;font-size:13px}
+.settings-content{padding:28px;border-radius:var(--radius)}
+.badge{font-size:11.5px;padding:4px 10px}
+.eyebrow{letter-spacing:.1em}
+.section-header p{font-size:13px}
+.timezone-pill{border-radius:999px;padding:7px 12px;font-size:11px}
+.toggle{width:38px;height:22px}.toggle span{width:18px;height:18px}.toggle.is-on span{transform:translateX(16px)}
+
+/* BookMe Look, Teil 2: helle Sidebar passend zur freundlichen Oberfläche. */
+.sidebar{background:#fff;border-right:1px solid var(--line);color:var(--ink)}
+.sidebar .brand-name{color:var(--ink)}
+.sidebar .nav-label{color:#596273;letter-spacing:.11em;font-size:10px;padding:10px 14px 6px}
+.sidebar .nav-item{border:0;border-radius:12px;padding:11px 13px;color:#5c6675;font-weight:600}
+.sidebar .nav-item svg{color:#8b95a5}
+.sidebar .nav-item:hover{background:#f2f4f8;color:var(--ink)}
+.sidebar .nav-item:hover svg{color:var(--ink)}
+.sidebar .nav-item.is-active{background:var(--brand-soft);border:0;color:var(--brand-dark);font-weight:700}
+.sidebar .nav-item.is-active svg{color:var(--brand)}
+.sidebar .nav-item.is-active:before{content:none}
+.sidebar .sidebar-profile{border-top-color:var(--line);padding:16px 5px 2px}
+.sidebar .sidebar-profile strong{color:var(--ink)}
+.sidebar .sidebar-profile span{color:var(--muted)}
+.sidebar .sidebar-profile>.icon-button,.sidebar .sidebar-close{color:var(--muted)}

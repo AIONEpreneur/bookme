@@ -5,14 +5,6 @@
   <p>Eine kostenlose, selbst hostbare Terminbuchungs-App für Verfügbarkeiten, Buchungslinks, Kalender-Synchronisation, E-Mail-Benachrichtigungen und Testzahlungen.</p>
 </div>
 
-## Über diese deutsche Community-Edition
-
-**BookMe** ist die deutsche Community-Edition von **SnagTime** von [nateherkai](https://github.com/nateherkai/snagtime), veröffentlicht unter der MIT-Lizenz. Die Benutzeroberfläche und die E-Mails wurden ins Deutsche übersetzt (in der Du-Form), damit deutschsprachige Solopreneure, Coaches und kleine Teams das Tool ohne Sprachbarriere nutzen können.
-
-- Original-Projekt: [https://github.com/nateherkai/snagtime](https://github.com/nateherkai/snagtime)
-- Diese deutsche Variante: [https://github.com/aionepreneur/bookme](https://github.com/aionepreneur/bookme)
-- Lizenz: [MIT](LICENSE) — der ursprüngliche Lizenztext bleibt unverändert erhalten.
-
 ## Was BookMe kann
 
 BookMe gibt dir den Quellcode für dein eigenes Terminbuchungssystem. Du kannst es kostenlos lokal laufen lassen, anpassen und auf Infrastruktur hosten, die du selbst kontrollierst.
@@ -168,4 +160,4 @@ Issues und Pull Requests sind willkommen. Siehe [CONTRIBUTING.md](CONTRIBUTING.m
 
 ## Lizenz
 
-BookMe ist unter der [MIT-Lizenz](LICENSE) verfügbar.
+BookMe ist unter der [MIT-Lizenz](LICENSE) verfügbar. Es basiert auf einem MIT-lizenzierten Open-Source-Projekt; der ursprüngliche Lizenztext bleibt, wie von der Lizenz verlangt, in der Datei [LICENSE](LICENSE) erhalten.

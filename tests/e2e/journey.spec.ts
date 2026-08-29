@@ -40,7 +40,7 @@ test("@journey signup, verification, onboarding, scheduling, recovery and tenant
   await page.goto("/event-types/new");
   await page.getByLabel("Terminname").fill(`Quality call ${suffix}`);
   await page.getByLabel("Buchungslink").fill(`quality-${suffix}`);
-  await page.getByLabel("Ort").selectOption({ label: "Telefonanruf" });
+  await page.getByRole("combobox", { name: /^Ort/ }).selectOption({ label: "Telefonanruf" });
   await page.getByLabel("Telefonhinweise").fill("Die Gastgeber:in ruft den Gast unter der bei der Buchung angegebenen Nummer an.");
   await page.getByRole("button", { name: "Termin veröffentlichen" }).click();
   await expect(page.getByRole("status")).toContainText("Änderungen gespeichert");

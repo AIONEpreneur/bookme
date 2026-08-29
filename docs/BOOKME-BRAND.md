@@ -1,7 +1,5 @@
 # BookMe-Markensystem
 
-BookMe ist die deutsche Community-Edition von [SnagTime](https://github.com/nateherkai/snagtime). Das Markensystem übernimmt die Farb- und Typografie-Grundlagen des Originals und ersetzt Wortmarke und Bildmarke.
-
 ## Positionierung
 
 BookMe macht es schnell und unkompliziert, Zeit anzubieten, einen Link zu teilen und gebucht zu werden. Das Produkt soll leistungsfähig genug für ein Unternehmen wirken und freundlich genug für Solo-Selbstständige.
@@ -47,4 +45,4 @@ Verwende Inter oder den nativen System-Sans-Serif-Stack. Überschriften sind kom
 
 ## Benennung
 
-Schreibe den Produktnamen als `BookMe`, mit großem B und M. Verwende weder `Book Me` noch `Bookme`. Interne technische Bezeichner (Event-Namen, Header, Datenbankrollen, Migrationsobjekte, Kompatibilitätsbezeichner) behalten ihre ursprünglichen Namen aus dem Upstream-Projekt, damit die Codebasis mit SnagTime vergleichbar und aktualisierbar bleibt.
+Schreibe den Produktnamen als `BookMe`, mit großem B und M. Verwende weder `Book Me` noch `Bookme`. Interne technische Bezeichner (Event-Namen, Header, Datenbankrollen, Migrationsobjekte, Kompatibilitätsbezeichner) behalten ihre bestehenden Namen, damit Updates und Migrationen stabil bleiben.

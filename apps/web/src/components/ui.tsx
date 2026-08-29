@@ -33,8 +33,8 @@ export function ButtonLink({ href, children, icon, variant = "primary", size = "
   return <Link className={`button button-${variant} button-${size} ${className}`} href={href}>{icon && <Icon name={icon} size={16} />}{children}</Link>;
 }
 
-export function ActionButton({ children, icon, variant = "secondary", type = "button", onClick, disabled, className = "", ariaLabel }: { children?: ReactNode; icon?: IconName; variant?: "primary" | "secondary" | "ghost" | "danger"; type?: "button" | "submit"; onClick?: () => void; disabled?: boolean; className?: string; ariaLabel?: string }) {
-  return <button className={`button button-${variant} ${className}`} type={type} onClick={onClick} disabled={disabled} aria-label={ariaLabel}>{icon && <Icon name={icon} size={16} />}{children}</button>;
+export function ActionButton({ children, icon, variant = "secondary", type = "button", onClick, disabled, className = "", ariaLabel, title }: { children?: ReactNode; icon?: IconName; variant?: "primary" | "secondary" | "ghost" | "danger"; type?: "button" | "submit"; onClick?: () => void; disabled?: boolean; className?: string; ariaLabel?: string; title?: string }) {
+  return <button className={`button button-${variant} ${className}`} type={type} onClick={onClick} disabled={disabled} aria-label={ariaLabel} title={title}>{icon && <Icon name={icon} size={16} />}{children}</button>;
 }
 
 export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode }) {

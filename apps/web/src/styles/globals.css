@@ -150,3 +150,7 @@ h2{font-size:19px}
 .sidebar .sidebar-profile strong{color:var(--ink)}
 .sidebar .sidebar-profile span{color:var(--muted)}
 .sidebar .sidebar-profile>.icon-button,.sidebar .sidebar-close{color:var(--muted)}
+
+/* BookMe Look, Teil 3: Abstände je Bildschirmgröße sauber halten. */
+.editor-page{margin:-40px -44px -72px}
+@media(max-width:820px){.main-content{padding:26px 20px 50px}.editor-page{margin:-26px -20px -50px}}

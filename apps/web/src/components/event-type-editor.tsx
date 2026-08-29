@@ -11,12 +11,19 @@ import { ActionButton, Badge, Field, Toggle } from "./ui";
 import { useWorkspaceAccess } from "./workspace-access";
 
 const defaultEvent: EventType = {
-  id: "new", title: "", slug: "", description: "", color: "#2563eb", status: "draft", location: "Google Meet",
-  locationType: "GOOGLE_MEET", locationValue: null,
+  id: "new", title: "", slug: "", description: "", color: "#2563eb", status: "draft", location: "Die Einwahldaten bekommst du mit der Buchungsbestätigung",
+  locationType: "CUSTOM", locationValue: "Die Einwahldaten bekommst du mit der Buchungsbestätigung",
   durations: [{ minutes: 30, label: "30 min", isDefault: true, currency: "USD" }], questions: [],
   bookingWindowDays: 60, bufferBeforeMinutes: 15, bufferAfterMinutes: 15, minimumNoticeMinutes: 240,
   bookingCount: 0, hostName: "",
 };
+
+function slugFromTitle(value: string) {
+  return value.toLowerCase()
+    .replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue").replaceAll("ß", "ss")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
 
 const tabs = ["Basics", "Availability", "Questions"] as const;
 const tabLabels: Record<(typeof tabs)[number], string> = { Basics: "Grundlagen", Availability: "Verfügbarkeit", Questions: "Fragen" };
@@ -54,6 +61,17 @@ export function EventTypeEditor({ eventId, mode = "edit" }: { eventId?: string; 
   }, [eventId, loadAttempt, mode]);
 
   const update = <K extends keyof EventType>(key: K, value: EventType[K]) => { if (!loaded) return; revision.current += 1; setSaved(false); setEvent((item) => ({ ...item, [key]: value })); };
+  const slugEdited = useRef(mode === "edit");
+  const updateTitle = (value: string) => { if (!loaded) return; revision.current += 1; setSaved(false); setEvent((item) => ({ ...item, title: value, ...(slugEdited.current ? {} : { slug: slugFromTitle(value) }) })); };
+  const updateSlug = (value: string) => { slugEdited.current = value.trim().length > 0; update("slug", value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); };
+  const missingFields = useMemo(() => {
+    const missing: string[] = [];
+    if (!event.title.trim()) missing.push("der Terminname");
+    if (!event.slug.trim()) missing.push("der Buchungslink");
+    if (event.durations.length === 0) missing.push("mindestens eine Dauer");
+    if (!locationComplete) missing.push("der Ort des Termins");
+    return missing;
+  }, [event.title, event.slug, event.durations.length, locationComplete]);
   const updateDuration = (index: number, patch: Partial<DurationOption>) => update("durations", event.durations.map((item, i) => i === index ? { ...item, ...patch, label: patch.minutes ? `${patch.minutes} min` : item.label } : patch.isDefault ? { ...item, isDefault: false } : item));
   const addDuration = () => update("durations", [...event.durations, { minutes: 60, label: "60 min", isDefault: false, currency }]);
   const canPublish = Boolean(event.title.trim() && event.slug.trim() && event.durations.length > 0 && locationComplete && (!isPaid || currency));
@@ -62,6 +80,7 @@ export function EventTypeEditor({ eventId, mode = "edit" }: { eventId?: string; 
 
   async function save(publish = false) {
     if (!loaded) return;
+    if (missingFields.length) { setSaveError(`Fast geschafft — es fehlt noch: ${missingFields.join(", ")}.`); return; }
     setSaving(true); setSaveError("");
     const savingRevision = revision.current;
     const next = { ...event, status: publish ? "published" as const : event.status };
@@ -94,7 +113,7 @@ export function EventTypeEditor({ eventId, mode = "edit" }: { eventId?: string; 
   return <div className="editor-page">
     <header className="editor-topbar">
       <div className="editor-title"><Link href="/event-types" className="icon-button" aria-label="Zurück zu den Terminarten"><Icon name="arrow-left" /></Link><div><span>{mode === "create" ? "Neue Terminart" : "Terminart bearbeiten"}</span><strong>{event.title || "Unbenannter Termin"}</strong></div><Badge tone={event.status === "published" ? "success" : "neutral"} dot>{event.status === "published" ? "veröffentlicht" : event.status === "draft" ? "Entwurf" : "archiviert"}</Badge></div>
-      <div className="editor-actions">{mode === "edit" && <ActionButton onClick={() => void remove()} variant="danger" disabled={deleting || saving}>{deleting ? "Wird gelöscht…" : "Löschen"}</ActionButton>}{persistedSlug ? <Link href={`/book/${persistedSlug}`} className="button button-secondary"><Icon name="external" size={16} />Veröffentlichte Seite ansehen</Link> : <button type="button" className="button button-secondary" disabled title="Speichere und veröffentliche diesen Termin, bevor du ihn ansiehst"><Icon name="external" size={16} />Vorschau nicht verfügbar</button>}{event.status !== "published" && <ActionButton onClick={() => save(false)} variant="secondary" disabled={saving || deleting}>{saving ? "Wird gespeichert…" : "Entwurf speichern"}</ActionButton>}<ActionButton onClick={() => save(true)} variant="primary" disabled={!canPublish || saving || deleting}>{saving ? "Wird gespeichert…" : event.status === "published" ? "Änderungen speichern" : "Termin veröffentlichen"}</ActionButton></div>
+      <div className="editor-actions">{mode === "edit" && <ActionButton onClick={() => void remove()} variant="danger" disabled={deleting || saving}>{deleting ? "Wird gelöscht…" : "Löschen"}</ActionButton>}{persistedSlug ? <Link href={`/book/${persistedSlug}`} className="button button-secondary"><Icon name="external" size={16} />Veröffentlichte Seite ansehen</Link> : <button type="button" className="button button-secondary" disabled title="Speichere und veröffentliche diesen Termin, bevor du ihn ansiehst"><Icon name="external" size={16} />Vorschau nicht verfügbar</button>}{event.status !== "published" && <ActionButton onClick={() => save(false)} variant="secondary" disabled={saving || deleting}>{saving ? "Wird gespeichert…" : "Entwurf speichern"}</ActionButton>}<ActionButton onClick={() => save(true)} variant="primary" disabled={!canPublish || saving || deleting} title={canPublish ? undefined : `Es fehlt noch: ${missingFields.join(", ")}`}>{saving ? "Wird gespeichert…" : event.status === "published" ? "Änderungen speichern" : "Termin veröffentlichen"}</ActionButton></div>
     </header>
     {saved && <div className="toast" role="status"><span><Icon name="check" /></span>Änderungen gespeichert</div>}
     {saveError && <div className="toast toast-error" role="alert"><span><Icon name="x" /></span>{saveError}</div>}
@@ -105,8 +124,8 @@ export function EventTypeEditor({ eventId, mode = "edit" }: { eventId?: string; 
         <div id="event-settings-panel" role="tabpanel" aria-labelledby={`event-tab-${activeTab.toLowerCase()}`}>
         {activeTab === "Basics" && <div className="editor-sections">
           <section className="form-card"><div className="form-card-title"><span className="number-chip">1</span><div><h2>Termindetails</h2><p>Gib Gästen einen klaren Grund zu buchen.</p></div></div><div className="form-grid">
-            <Field label="Terminname" required><input value={event.title} onChange={(e) => update("title", e.target.value)} placeholder="z. B. Erstgespräch" /></Field>
-            <Field label="Buchungslink" required hint={publicUrl}><div className="input-prefix"><span suppressHydrationWarning>{typeof window === "undefined" ? "/book/" : `${window.location.origin}/book/`}</span><input value={event.slug} onChange={(e) => update("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} placeholder="erstgespraech" /></div></Field>
+            <Field label="Terminname" required><input value={event.title} onChange={(e) => updateTitle(e.target.value)} placeholder="z. B. Erstgespräch" /></Field>
+            <Field label="Buchungslink" required hint={publicUrl}><div className="input-prefix"><span suppressHydrationWarning>{typeof window === "undefined" ? "/book/" : `${window.location.origin}/book/`}</span><input value={event.slug} onChange={(e) => updateSlug(e.target.value)} placeholder="erstgespraech" /></div></Field>
             <Field label="Beschreibung"><textarea rows={4} value={event.description} onChange={(e) => update("description", e.target.value)} placeholder="Erkläre Gästen, worum es in diesem Meeting geht und wie sie sich vorbereiten können." /></Field>
             <Field label="Terminfarbe"><div className="color-options" role="radiogroup" aria-label="Terminfarbe">{["#2563eb", "#16a394", "#3978d4", "#ed7a5f", "#e2a93b", "#8f5db7"].map((color) => <button type="button" role="radio" aria-checked={event.color === color} key={color} className={event.color === color ? "is-selected" : ""} style={{ background: color, color: foregroundForBackground(color) }} onClick={() => update("color", color)} aria-label={`Farbe ${color} verwenden`}><Icon name="check" size={14} /></button>)}</div></Field>
           </div></section>
